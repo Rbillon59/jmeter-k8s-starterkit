@@ -13,7 +13,7 @@ spec:
     spec:
       containers:
       - name: jmmaster
-        image: rbillon59/jmeter-k8s-base:dabc05cccbfb
+        image: rbillon59/jmeter-k8s-base:5.4.1
         imagePullPolicy: Always
         env:
         - name: MODE
