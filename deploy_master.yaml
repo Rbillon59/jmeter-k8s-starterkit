@@ -1,0 +1,39 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: jmeter-master
+  labels:
+    jmeter_mode: master
+spec:
+  completions: 1
+  template:
+    metadata:
+      labels:
+        jmeter_mode: master
+    spec:
+      containers:
+      - name: jmmaster
+        image: rbillon59/jmeter-k8s-base:dabc05cccbfb
+        imagePullPolicy: Always
+        env:
+        - name: MODE
+          value: "MASTER"
+        command: ["/bin/bash"]
+        args: ["-c", "while true; do sleep 30;done"]
+        ports:
+        - containerPort: 60000
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "128m"
+          limits:
+            memory: "512Mi"
+            cpu: "256m"
+        livenessProbe:
+          exec:
+            command:
+            - cat
+            - /opt/jmeter/apache-jmeter/bin/jmeter
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      restartPolicy: Never

@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jmeter-slaves
+  labels:
+    jmeter_mode: slave
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      jmeter_mode: slave
+  template:
+    metadata:
+      labels:
+        jmeter_mode: slave
+    spec:
+      containers:
+      - name: jmslave
+        image: rbillon59/jmeter-k8s-base:dabc05cccbfb
+        imagePullPolicy: Always
+        env:
+        - name: MODE
+          value: "SLAVE"
+        command: ["/bin/bash"]
+        args: ["-c", "while true; do sleep 30;done"]
+        ports:
+        - containerPort: 1099
+        - containerPort: 50000
+        - containerPort: 4445
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "512m"
+          limits:
+            memory: "1024Mi"
+            cpu: "1024m"
+        livenessProbe:
+          exec:
+            command:
+            - cat
+            - /opt/jmeter/apache-jmeter/bin/jmeter
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jmeter-slaves-svc
+  labels:
+    jmeter_mode: slave
+spec:
+  clusterIP: None
+  ports:
+    - port: 1099
+      name: jmeter
+      targetPort: 1099
+    - port: 50000
+      name: rmi
+      targetPort: 50000
+    - port: 4445
+      name: stoptest
+      targetPort: 4445
+  selector:
+    jmeter_mode: slave
