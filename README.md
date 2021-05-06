@@ -96,3 +96,9 @@ Usage :
 - Generate a shell script and send it to the controller to wait for all pods to have their JMeter slave port listening (TCP 1099) and launch the performance test.
 
 *Pro tip : Even if the process is launched with `kubectl exec`, JMeter will write it logs to stdout. So a `kubectl -n <namespace> logs jmeter-master-<podId>` will give you the JMeter controller logs*
+
+
+### 4. Gethering results from the master pod
+
+You can run `kubectl cp -n <namespace> <master-pod-id>:/opt/jmeter/apache-jmeter/bin/<result> $PWD/<local-result-name>`
+You can do this for the generated report and the JTL for example.
