@@ -17,9 +17,9 @@ Thanks to [Kubernauts](https://github.com/kubernauts/jmeter-kubernetes) for the 
 | Distributed testing      | Yes | Virtually unlimited with auto-scaling     |
 | Plugin support | Yes | Modules are installed at run time by scanning the JMX needs      |
 | Module support | Yes | JMeter include controller are supported if path is just name of file
-| CSV splitting | Yes | CSV files are splitted prior to launch the test|
+| CSV splitting | Yes | CSV files are splitted prior to launch the test and unique pieces copied to each pods |
 | Node auto-scaling | Yes | By requesting ressources at deployment time, the cluster will scale automatically if needed |
-| Reporting | Yes | The JMeter report is generated at the end of the test inside the master pod if the -f flag is used in the start_test.sh|
+| Reporting | Yes | The JMeter report is generated at the end of the test inside the master pod if the -r flag is used in the start_test.sh|
 | Live monitoring | Barely | Only on the JMeter master pod logs. If you want live monitoring, deploy your own |
 | Report persistance | No | At pods destruction, all the pods filesystems are lost |
 | Multi thread group support | Not really | You can add multi thread groups, but if you want to use JMeter properties (like threads etc..) you need to add them in the .env and update the start_test.sh to update the "user_param" variable to add the desired variables |
