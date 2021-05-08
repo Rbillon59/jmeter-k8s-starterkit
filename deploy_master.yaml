@@ -24,10 +24,10 @@ spec:
         - containerPort: 60000
         resources:
           requests:
-            memory: "128Mi"
-            cpu: "128m"
+            memory: "1024Mi"
+            cpu: "256m"
           limits:
-            memory: "512Mi"
+            memory: "1024Mi"
             cpu: "256m"
         livenessProbe:
           exec:

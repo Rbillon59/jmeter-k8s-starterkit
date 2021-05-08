@@ -81,6 +81,7 @@ fi
 # Recreating each pods
 logit "INFO" "Recreating pod set"
 kubectl -n "${namespace}" scale --replicas=0 deployment/jmeter-slaves
+kubectl -n "${namespace}" rollout status deployment/jmeter-slaves
 
 # Starting jmeter slave pod 
 if [ -z "${nb_injectors}" ]; then
@@ -112,22 +113,34 @@ if [ -n "${module}" ]; then
     logit "INFO" "Number of slaves is ${slave_num}"
     logit "INFO" "Processing directory.. ${module_dir}"
 
-    for i in $(seq -f "%0${slave_digit}g" 0 $((slave_num-1)))
+    for modulePath in $(ls ${module_dir}/*.jmx)
     do
-        logit "INFO" "Copying ${module_dir} to ${slave_pods[j]}"
-        kubectl -n "${namespace}" cp "${module_dir}" "${slave_pods[j]}":"/opt/jmeter/apache-jmeter/bin/"
-        logit "INFO" "Copying scenario/${jmx_dir}/${jmx} to ${slave_pods[j]}"
-        kubectl cp "scenario/${jmx_dir}/${jmx}" -n "${namespace}" "${slave_pods[j]}:/opt/jmeter/apache-jmeter/bin/"
-        j=$((j+1))
-    done # for i in "${slave_pods[@]}"
+        module=$(basename "${modulePath}")
+
+        for i in $(seq -f "%0${slave_digit}g" 0 $((slave_num-1)))
+            do
+                printf "Copy %s to %s on %s\n" "${module}" "${jmeter_directory}/${module}" "${slave_pods[j]}"
+                kubectl -n "${namespace}" cp "${modulePath}" "${slave_pods[j]}":"${jmeter_directory}/${module}"
+                i=$((i+1))
+            done
+        kubectl -n "${namespace}" cp "${modulePath}" "${master_pod}":"${jmeter_directory}/${module}"
+    done
+
     logit "INFO" "Finish copying modules in slave pod"
-
-    logit "INFO" "Copying scenario/${jmx_dir}/${jmx} into ${master_pod}"
-    kubectl -n "${namespace}" cp "${module_dir}" "${master_pod}:/opt/jmeter/apache-jmeter/bin/"
-
-
-
 fi
+
+logit "INFO" "Copying ${jmx} to slaves pods"
+j=0
+logit "INFO" "Number of slaves is ${slave_num}"
+
+for i in $(seq -f "%0${slave_digit}g" 0 $((slave_num-1)))
+do
+    logit "INFO" "Copying scenario/${jmx_dir}/${jmx} to ${slave_pods[j]}"
+    kubectl cp "scenario/${jmx_dir}/${jmx}" -n "${namespace}" "${slave_pods[j]}:/opt/jmeter/apache-jmeter/bin/"
+    j=$((j+1))
+done # for i in "${slave_pods[@]}"
+logit "INFO" "Finish copying scenario in slaves pod"
+
 logit "INFO" "Copying scenario/${jmx_dir}/${jmx} into ${master_pod}"
 kubectl cp "scenario/${jmx_dir}/${jmx}" -n "${namespace}" "${master_pod}:/opt/jmeter/apache-jmeter/bin/"
 
@@ -170,8 +183,7 @@ if [ -n "${csv}" ]; then
             for i in $(seq -f "%0${slave_digit}g" 0 $((slave_num-1)))
             do
                 printf "Copy %s to %s on %s\n" "${i}" "${csvfile}" "${slave_pods[j]}"
-                kubectl -n "${namespace}" exec -ti ${slave_pods[j]} -- mkdir -p ${jmeter_directory}/dataset 
-                kubectl -n "${namespace}" cp "${dataset_dir}/${i}" "${slave_pods[j]}":"${jmeter_directory}/dataset/${csvfile}"
+                kubectl -n "${namespace}" cp "${dataset_dir}/${i}" "${slave_pods[j]}":"${jmeter_directory}/${csvfile}"
                 rm -v "./scenario/dataset/${i}"
                 j=$((j+1))
             done
@@ -179,7 +191,7 @@ if [ -n "${csv}" ]; then
 fi
 
 
-slave_list=$(kubectl -n ${namespace} describe service jmeter-slaves-svc | grep :1099 | awk -F" " '{print $2}' | sed 's/:1099//g')
+slave_list=$(kubectl -n ${namespace} describe endpoints jmeter-slaves-svc | grep ' Addresses' | awk -F" " '{print $2}')
 logit "INFO" "JMeter slave list : ${slave_list}"
 slave_array=($(echo ${slave_list} | sed 's/,/ /g'))
 
@@ -196,9 +208,10 @@ if [ -n "${enable_report}" ]; then
     report_command_line="--reportatendofloadtests --reportoutputfolder /report/report-${jmx}-$(date +"%F_%H%M%S")"
 fi
 
-echo "slave_array=(${slave_array[@]}); index=${slave_num} && while [ \${index} -ge 0 ]; do for slave in \${slave_array[@]}; do if echo 'test open port' 2>/dev/null > /dev/tcp/\${slave}/1099; then echo \${slave}' ready'; index=\$((index-1)); else echo \${slave}' not ready'; fi; done; echo 'Waiting for slave readiness'; sleep 2; done" > "scenario/${jmx_dir}/load_test.sh"
+echo "slave_array=(${slave_array[@]}); index=${slave_num} && while [ \${index} -gt 0 ]; do for slave in \${slave_array[@]}; do if echo 'test open port' 2>/dev/null > /dev/tcp/\${slave}/1099; then echo \${slave}' ready' && slave_array=(\${slave_array[@]/\${slave}/}); index=\$((index-1)); else echo \${slave}' not ready'; fi; done; echo 'Waiting for slave readiness'; sleep 2; done" > "scenario/${jmx_dir}/load_test.sh"
 
 { 
+    echo "echo \"Installing needed plugins\""
     echo "cd /opt/jmeter/apache-jmeter/bin" 
     echo "sh PluginsManagerCMD.sh install-for-jmx ${jmx}" 
     echo "jmeter ${param_host} ${param_user} ${report_command_line} --logfile ${jmx}_$(date +"%F_%H%M%S").jtl --nongui --testfile ${jmx} -Dserver.rmi.ssl.disable=true --remotestart ${slave_list} >> jmeter-master.out 2>> jmeter-master.err &" 
