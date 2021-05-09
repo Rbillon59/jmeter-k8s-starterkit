@@ -80,16 +80,21 @@ fi
 
 # Recreating each pods
 logit "INFO" "Recreating pod set"
-kubectl -n "${namespace}" scale --replicas=0 deployment/jmeter-slaves
-kubectl -n "${namespace}" rollout status deployment/jmeter-slaves
+kubectl -n "${namespace}" patch job jmeter-slaves -p '{"spec":{"parallelism":0}}'
+#kubectl -n "${namespace}" rollout status job/jmeter-slaves
 
 # Starting jmeter slave pod 
 if [ -z "${nb_injectors}" ]; then
     logit "WARNING" "Keeping number of injector to 1"
+    kubectl -n "${namespace}" patch job jmeter-slaves -p '{"spec":{"parallelism":1}}'
 else
     logit "INFO" "Scaling the number of pods to ${nb_injectors}. "
-    kubectl -n "${namespace}" scale --replicas=${nb_injectors} deployment/jmeter-slaves
-    kubectl -n "${namespace}" rollout status deployment/jmeter-slaves
+    #kubectl -n "${namespace}" scale --replicas=${nb_injectors} deployment/jmeter-slaves
+    kubectl -n "${namespace}" patch job jmeter-slaves -p '{"spec":{"parallelism":'${nb_injectors}'}}'
+
+    #kubectl -n "${namespace}" rollout status deployment/jmeter-slaves
+    logit "INFO" "Waiting for pods to be ready"
+    while [[ $(kubectl -n ${namespace} get pods -l jmeter_mode=slave -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; do echo "$(kubectl -n ${namespace} get pods -l jmeter_mode=slave)" && sleep 1; done
     logit "INFO" "Finish scaling the number of pods."
 fi
 
@@ -152,6 +157,8 @@ logit "INFO" "Installing needed plugins on slave pods"
     echo "cd ${jmeter_directory}"
     echo "sh PluginsManagerCMD.sh install-for-jmx ${jmx} > plugins-install.out 2> plugins-install.err"
     echo "jmeter-server -Dserver.rmi.localport=50000 -Dserver_port=1099 -Jserver.rmi.ssl.disable=true >> jmeter-injector.out 2>> jmeter-injector.err &"
+    echo "trap 'kill -10 1' EXIT INT TERM"
+    echo "wait"
 } > "scenario/${jmx_dir}/jmeter_injector_start.sh"
 
 j=0
@@ -214,7 +221,11 @@ echo "slave_array=(${slave_array[@]}); index=${slave_num} && while [ \${index} -
     echo "echo \"Installing needed plugins\""
     echo "cd /opt/jmeter/apache-jmeter/bin" 
     echo "sh PluginsManagerCMD.sh install-for-jmx ${jmx}" 
-    echo "jmeter ${param_host} ${param_user} ${report_command_line} --logfile ${jmx}_$(date +"%F_%H%M%S").jtl --nongui --testfile ${jmx} -Dserver.rmi.ssl.disable=true --remotestart ${slave_list} >> jmeter-master.out 2>> jmeter-master.err &" 
+    echo "jmeter ${param_host} ${param_user} ${report_command_line} --logfile ${jmx}_$(date +"%F_%H%M%S").jtl --nongui --testfile ${jmx} -Dserver.rmi.ssl.disable=true --remoteexit --remotestart ${slave_list} >> jmeter-master.out 2>> jmeter-master.err &"
+    
+    # Uncomment these lines to enable the "Completed" state of the Job. When in completed state, you'll not be able to kubectl cp or exec into that pod, meaning the JMeter report inside is "lost"
+    #echo "trap 'kill -10 1' EXIT INT TERM"
+    #echo "wait"
 } >> "scenario/${jmx_dir}/load_test.sh"
 
 logit "INFO" "Copying scenario/${jmx_dir}/load_test.sh into  ${master_pod}:/opt/jmeter/load_test"

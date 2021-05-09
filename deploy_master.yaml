@@ -6,6 +6,7 @@ metadata:
     jmeter_mode: master
 spec:
   completions: 1
+  backoffLimit: 0
   template:
     metadata:
       labels:
@@ -19,7 +20,7 @@ spec:
         - name: MODE
           value: "MASTER"
         command: ["/bin/bash"]
-        args: ["-c", "while true; do sleep 30;done"]
+        args: ["-c", "trap 'exit 0' SIGUSR1 && while true; do sleep 30;done"]
         ports:
         - containerPort: 60000
         resources:
