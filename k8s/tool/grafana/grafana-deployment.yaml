@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: grafana
+  name: grafana
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grafana
+  template:
+    metadata:
+      labels:
+        app: grafana
+    spec:
+      containers:
+      - envFrom:
+        - secretRef:
+            name: grafana-creds
+        image: docker.io/grafana/grafana:7.3.3
+        name: grafana
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "512m"
+          limits:
+            memory: "512Mi"
+            cpu: "512m"
+        volumeMounts:
+          - name: data-dir
+            mountPath: /var/lib/grafana/
+          - name: grafana-dashboards
+            mountPath: /var/lib/grafana/dashboards
+          - name: influxdb-dashboard-provisioning
+            mountPath: /etc/grafana/provisioning/dashboards
+          - name: influxdb-datasource-provisioning
+            mountPath: /etc/grafana/provisioning/datasources
+      securityContext:
+        fsGroup: 472
+      volumes:
+        - name: data-dir
+          persistentVolumeClaim:
+            claimName: graf-data-dir-pvc
+        - name: grafana-dashboards
+          configMap:
+            name: grafana-dashboards
+            defaultMode: 420
+        - name: telegraf-dashboard
+          configMap:
+            name: telegraf-dashboard
+            defaultMode: 420
+        - name: influxdb-dashboard-provisioning
+          configMap:
+            name: influxdb-dashboard-provisioning
+            defaultMode: 420
+        - name: influxdb-datasource-provisioning
+          configMap:
+            name: influxdb-datasource-provisioning
+            defaultMode: 420

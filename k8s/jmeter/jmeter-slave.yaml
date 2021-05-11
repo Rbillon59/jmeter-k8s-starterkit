@@ -106,6 +106,5 @@ spec:
           containers:
           - name: kubectl-container
             image: bitnami/kubectl:latest
-            # I'm using bitnami kubectl, because the suggested kubectl image didn't had the `field-selector` option
-            command: ["sh", "-c", "kubectl delete jobs --selector jmeter_mode=slave --field-selector status.successful=1"]
+            command: ["sh", "-c", "kubectl delete jobs --selector jmeter_mode=slave --field-selector status.successful=1 && kubectl delete jobs --selector jmeter_mode=master --field-selector status.successful=1"]
           restartPolicy: Never

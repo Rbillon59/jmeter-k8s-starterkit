@@ -3,7 +3,7 @@
 
 This is a template repository from which you can start load testing faster when injecting load from a kubernetes cluster.
 
-You will find inside it the necessary to organize and run your performance scenario.
+You will find inside it the necessary to organize and run your performance scenario. There is also a node monitoring tool which will monitor all your injection nodes. As well an embeded live monitoring with InfluxDB and Grafana
 
 Thanks to [Kubernauts](https://github.com/kubernauts/jmeter-kubernetes) for the inspiration !
 
@@ -20,8 +20,9 @@ Thanks to [Kubernauts](https://github.com/kubernauts/jmeter-kubernetes) for the 
 | CSV support | Yes | CSV files are splitted prior to launch the test and unique pieces copied to each pods, in the JMeter scenario, just put the name of the file in the *path* field |
 | Node auto-scaling | Yes | By requesting ressources at deployment time, the cluster will scale automatically if needed |
 | Reporting | Yes | The JMeter report is generated at the end of the test inside the master pod if the -r flag is used in the start_test.sh|
-| Live monitoring | Barely | Only on the JMeter master pod logs. If you want live monitoring, deploy your own |
-| Report persistance | No | At pods destruction, all the pods filesystems are lost |
+| Live monitoring | Yes | An InfluxDB instance and a Grafana are available in the stack |
+| Report persistance | Yes | A persistence volume is used to store the reports and results |
+| Injector nodes monitoring | Yes | Even if autoscaling, a Daemon Set will deploy a telegraf instance and persist the monitoring data to InfluxDB. A board is available in Grafana to show the Telegraf monitoring
 | Multi thread group support | Not really | You can add multi thread groups, but if you want to use JMeter properties (like threads etc..) you need to add them in the .env and update the start_test.sh to update the "user_param" variable to add the desired variables |
 
 

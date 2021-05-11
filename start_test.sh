@@ -80,8 +80,10 @@ fi
 
 # Recreating each pods
 logit "INFO" "Recreating pod set"
+kubectl -n "${namespace}" apply -f k8s/jmeter/jmeter-master.yaml -f k8s/jmeter/jmeter-slave.yaml
 kubectl -n "${namespace}" patch job jmeter-slaves -p '{"spec":{"parallelism":0}}'
-#kubectl -n "${namespace}" rollout status job/jmeter-slaves
+logit "INFO" "Waiting for all slaves pods to be terminated before recreating the pod set"
+while [[ $(kubectl -n ${namespace} get pods -l jmeter_mode=slave -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "" ]]; do echo "$(kubectl -n ${namespace} get pods -l jmeter_mode=slave )" && sleep 1; done
 
 # Starting jmeter slave pod 
 if [ -z "${nb_injectors}" ]; then
@@ -89,17 +91,23 @@ if [ -z "${nb_injectors}" ]; then
     kubectl -n "${namespace}" patch job jmeter-slaves -p '{"spec":{"parallelism":1}}'
 else
     logit "INFO" "Scaling the number of pods to ${nb_injectors}. "
-    #kubectl -n "${namespace}" scale --replicas=${nb_injectors} deployment/jmeter-slaves
     kubectl -n "${namespace}" patch job jmeter-slaves -p '{"spec":{"parallelism":'${nb_injectors}'}}'
-
-    #kubectl -n "${namespace}" rollout status deployment/jmeter-slaves
     logit "INFO" "Waiting for pods to be ready"
-    while [[ $(kubectl -n ${namespace} get pods -l jmeter_mode=slave -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; do echo "$(kubectl -n ${namespace} get pods -l jmeter_mode=slave)" && sleep 1; done
+
+    end=${nb_injectors}
+    for ((i=1; i<=end; i++))
+    do
+        validation_string=${validation_string}"True"
+    done
+
+    while [[ $(kubectl -n ${namespace} get pods -l jmeter_mode=slave -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}' | sed 's/ //g') != "${validation_string}" ]]; do echo "$(kubectl -n ${namespace} get pods -l jmeter_mode=slave )" && sleep 1; done
     logit "INFO" "Finish scaling the number of pods."
 fi
 
 #Get Master pod details
 master_pod=$(kubectl get pod -n "${namespace}" | grep jmeter-master | awk '{print $1}')
+logit "INFO" "Waiting for master pod to be available"
+while [[ $(kubectl -n ${namespace} get pods -l jmeter_mode=master -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; do echo "$(kubectl -n ${namespace} get pods -l jmeter_mode=master )" && sleep 1; done
 
 #Get Slave pod details
 slave_pods=($(kubectl get pods -n "${namespace}" | grep jmeter-slave | grep Running | awk '{print $1}'))
@@ -114,7 +122,6 @@ if [ -n "${module}" ]; then
     logit "INFO" "Using modules (test fragments), uploading them in the pods"
     module_dir="scenario/module"
 
-    j=0
     logit "INFO" "Number of slaves is ${slave_num}"
     logit "INFO" "Processing directory.. ${module_dir}"
 
@@ -122,32 +129,29 @@ if [ -n "${module}" ]; then
     do
         module=$(basename "${modulePath}")
 
-        for i in $(seq -f "%0${slave_digit}g" 0 $((slave_num-1)))
-            do
-                printf "Copy %s to %s on %s\n" "${module}" "${jmeter_directory}/${module}" "${slave_pods[j]}"
-                kubectl -n "${namespace}" cp "${modulePath}" "${slave_pods[j]}":"${jmeter_directory}/${module}"
-                i=$((i+1))
-            done
-        kubectl -n "${namespace}" cp "${modulePath}" "${master_pod}":"${jmeter_directory}/${module}"
+        for ((i=0; i<end; i++))
+        do
+            printf "Copy %s to %s on %s\n" "${module}" "${jmeter_directory}/${module}" "${slave_pods[$i]}"
+            kubectl -n "${namespace}" cp "${modulePath}" "${slave_pods[$i]}":"${jmeter_directory}/${module}" &
+        done            
+        kubectl -n "${namespace}" cp "${modulePath}" "${master_pod}":"${jmeter_directory}/${module}" &
     done
 
     logit "INFO" "Finish copying modules in slave pod"
 fi
 
 logit "INFO" "Copying ${jmx} to slaves pods"
-j=0
 logit "INFO" "Number of slaves is ${slave_num}"
 
-for i in $(seq -f "%0${slave_digit}g" 0 $((slave_num-1)))
+for ((i=0; i<end; i++))
 do
-    logit "INFO" "Copying scenario/${jmx_dir}/${jmx} to ${slave_pods[j]}"
-    kubectl cp "scenario/${jmx_dir}/${jmx}" -n "${namespace}" "${slave_pods[j]}:/opt/jmeter/apache-jmeter/bin/"
-    j=$((j+1))
+    logit "INFO" "Copying scenario/${jmx_dir}/${jmx} to ${slave_pods[$i]}"
+    kubectl cp "scenario/${jmx_dir}/${jmx}" -n "${namespace}" "${slave_pods[$i]}:/opt/jmeter/apache-jmeter/bin/" &
 done # for i in "${slave_pods[@]}"
 logit "INFO" "Finish copying scenario in slaves pod"
 
 logit "INFO" "Copying scenario/${jmx_dir}/${jmx} into ${master_pod}"
-kubectl cp "scenario/${jmx_dir}/${jmx}" -n "${namespace}" "${master_pod}:/opt/jmeter/apache-jmeter/bin/"
+kubectl cp "scenario/${jmx_dir}/${jmx}" -n "${namespace}" "${master_pod}:/opt/jmeter/apache-jmeter/bin/" &
 
 
 logit "INFO" "Installing needed plugins on slave pods"
@@ -160,17 +164,6 @@ logit "INFO" "Installing needed plugins on slave pods"
     echo "trap 'kill -10 1' EXIT INT TERM"
     echo "wait"
 } > "scenario/${jmx_dir}/jmeter_injector_start.sh"
-
-j=0
-for i in $(seq -f "%0${slave_digit}g" 0 $((slave_num-1)))
-do
-        logit "INFO" "Starting jmeter server on ${slave_pods[j]} in parallel"
-        kubectl cp "scenario/${jmx_dir}/jmeter_injector_start.sh" -n "${namespace}" "${slave_pods[j]}:/opt/jmeter/jmeter_injector_start"
-        kubectl exec -i -n "${namespace}" "${slave_pods[j]}" -- /bin/bash "/opt/jmeter/jmeter_injector_start" &  
-        j=$((j+1))
-done # for i in "${slave_pods[@]}"
-
-
 
 # Copying dataset on slave pods
 if [ -n "${csv}" ]; then
@@ -186,16 +179,34 @@ if [ -n "${csv}" ]; then
             logit "INFO" "split --suffix-length=\"${slave_digit}\" -d -l $((lines_total/slave_num)) \"${csvfilefull}\" \"${dataset_dir}/\""
             split --suffix-length="${slave_digit}" -d -l $((lines_total/slave_num)) "${csvfilefull}" "${dataset_dir}/"
 
-            j=0
-            for i in $(seq -f "%0${slave_digit}g" 0 $((slave_num-1)))
+            for ((i=0; i<end; i++))
             do
-                printf "Copy %s to %s on %s\n" "${i}" "${csvfile}" "${slave_pods[j]}"
-                kubectl -n "${namespace}" cp "${dataset_dir}/${i}" "${slave_pods[j]}":"${jmeter_directory}/${csvfile}"
-                rm -v "./scenario/dataset/${i}"
-                j=$((j+1))
+                if [ ${slave_digit} -eq 2 ] && [ ${i} -lt 10 ]; then
+                    j=0${i}
+                elif [ ${slave_digit} -eq 2 ] && [ ${i} -ge 10 ]; then
+                    j=${i}
+                elif [ ${slave_digit} -eq 3 ] && [ ${i} -lt 10 ]; then
+                    j=00${i}
+                elif [ ${slave_digit} -eq 3 ] && [ ${i} -ge 10 ]; then
+                    j=0${i}
+                elif [ ${slave_digit} -eq 3 ] && [ ${i} -ge 100 ]; then
+                    j=${i}                    
+                fi
+
+                printf "Copy %s to %s on %s\n" "${j}" "${csvfile}" "${slave_pods[$i]}"
+                kubectl -n "${namespace}" cp "${dataset_dir}/${j}" "${slave_pods[$i]}":"${jmeter_directory}/${csvfile}" &
             done
     done
 fi
+
+wait
+
+for ((i=0; i<end; i++))
+do
+        logit "INFO" "Starting jmeter server on ${slave_pods[$i]} in parallel"
+        kubectl cp "scenario/${jmx_dir}/jmeter_injector_start.sh" -n "${namespace}" "${slave_pods[$i]}:/opt/jmeter/jmeter_injector_start"
+        kubectl exec -i -n "${namespace}" "${slave_pods[$i]}" -- /bin/bash "/opt/jmeter/jmeter_injector_start" &  
+done
 
 
 slave_list=$(kubectl -n ${namespace} describe endpoints jmeter-slaves-svc | grep ' Addresses' | awk -F" " '{print $2}')
@@ -218,14 +229,12 @@ fi
 echo "slave_array=(${slave_array[@]}); index=${slave_num} && while [ \${index} -gt 0 ]; do for slave in \${slave_array[@]}; do if echo 'test open port' 2>/dev/null > /dev/tcp/\${slave}/1099; then echo \${slave}' ready' && slave_array=(\${slave_array[@]/\${slave}/}); index=\$((index-1)); else echo \${slave}' not ready'; fi; done; echo 'Waiting for slave readiness'; sleep 2; done" > "scenario/${jmx_dir}/load_test.sh"
 
 { 
-    echo "echo \"Installing needed plugins\""
+    echo "echo \"Installing needed plugins for master\""
     echo "cd /opt/jmeter/apache-jmeter/bin" 
     echo "sh PluginsManagerCMD.sh install-for-jmx ${jmx}" 
-    echo "jmeter ${param_host} ${param_user} ${report_command_line} --logfile ${jmx}_$(date +"%F_%H%M%S").jtl --nongui --testfile ${jmx} -Dserver.rmi.ssl.disable=true --remoteexit --remotestart ${slave_list} >> jmeter-master.out 2>> jmeter-master.err &"
-    
-    # Uncomment these lines to enable the "Completed" state of the Job. When in completed state, you'll not be able to kubectl cp or exec into that pod, meaning the JMeter report inside is "lost"
-    #echo "trap 'kill -10 1' EXIT INT TERM"
-    #echo "wait"
+    echo "jmeter ${param_host} ${param_user} ${report_command_line} --logfile /report/${jmx}_$(date +"%F_%H%M%S").jtl --nongui --testfile ${jmx} -Dserver.rmi.ssl.disable=true --remoteexit --remotestart ${slave_list} >> jmeter-master.out 2>> jmeter-master.err &"
+    echo "trap 'kill -10 1' EXIT INT TERM"
+    echo "wait"
 } >> "scenario/${jmx_dir}/load_test.sh"
 
 logit "INFO" "Copying scenario/${jmx_dir}/load_test.sh into  ${master_pod}:/opt/jmeter/load_test"

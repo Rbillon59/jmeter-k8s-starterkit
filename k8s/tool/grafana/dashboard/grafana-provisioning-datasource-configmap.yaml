@@ -1,0 +1,17 @@
+apiVersion: v1
+data:
+  datasources.yaml: |-
+    apiVersion: 1
+    datasources:
+    - name: Influx-Jmeter
+      type: influxdb
+      access: proxy
+      url: http://influxdb:8086/
+      database: jmeter
+      user: user
+      password: oLzLG8L9ptgbSj
+      isDefault: true
+      editable: true
+kind: ConfigMap
+metadata:
+  name: influxdb-datasource-provisioning
