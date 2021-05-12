@@ -1,0 +1,108 @@
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number: 1 (0x1)
+        Signature Algorithm: sha256WithRSAEncryption
+        Issuer: C=US, ST=Maryland, L=Baltimore, O=Test CA, Limited, OU=Server Research Department, CN=Test CA/emailAddress=test@example.com
+        Validity
+            Not Before: May 11 22:26:27 2021 GMT
+            Not After : Feb  5 22:26:27 2024 GMT
+        Subject: C=US, ST=MD, L=Baltimore, O=Test Server, Limited, CN=Test Server
+        Subject Public Key Info:
+            Public Key Algorithm: rsaEncryption
+                RSA Public-Key: (2048 bit)
+                Modulus:
+                    00:ad:8e:1a:3a:2c:c4:54:c3:ad:7b:d6:ca:02:dc:
+                    95:f5:57:f1:71:d9:04:a8:e7:f4:21:8e:c8:1b:ea:
+                    57:66:9d:6d:b3:39:67:ac:4e:99:34:95:e5:5a:f5:
+                    9b:7e:60:7c:50:9f:99:3c:ae:6a:0e:cf:60:17:12:
+                    03:69:36:4c:79:b9:4f:ef:45:76:71:33:e3:fd:59:
+                    c5:33:0b:78:3d:44:a5:54:07:a3:b3:a0:b5:37:b2:
+                    48:3f:85:3c:4d:56:ac:e5:d1:33:43:55:7e:34:26:
+                    26:a6:1f:35:c1:8f:78:4d:cb:35:8e:8a:67:b1:f1:
+                    fb:c7:ca:0a:e9:e4:fd:2e:e4:8a:c3:d0:76:c9:9d:
+                    32:fa:72:7b:a4:0c:4f:43:9d:98:16:0a:24:83:65:
+                    fd:fb:1d:7a:ca:b5:28:a3:7c:b5:f3:87:e4:7f:b4:
+                    11:30:b3:23:ec:1e:68:58:c2:81:fd:5d:d5:33:68:
+                    78:f2:2c:16:bc:2e:8b:85:49:73:05:74:78:84:72:
+                    69:44:7f:54:d9:85:49:93:47:9c:9a:92:c1:e6:e9:
+                    36:61:d5:53:85:20:65:74:b1:2f:40:b0:f6:73:aa:
+                    b4:ec:9b:22:c5:7b:99:c5:50:86:15:b3:6f:67:7d:
+                    d5:02:eb:21:30:d1:59:dd:52:a4:e1:a4:62:0c:d1:
+                    8b:d9
+                Exponent: 65537 (0x10001)
+        X509v3 extensions:
+            X509v3 Subject Key Identifier: 
+                18:3C:53:B9:A2:F8:C6:5B:AA:0F:FC:2D:50:2B:FB:D3:EB:04:AD:F4
+            X509v3 Authority Key Identifier: 
+                keyid:DB:AB:BF:B8:22:0F:8E:7E:F6:02:2B:B6:0A:CE:75:6A:CF:02:FA:31
+
+            X509v3 Basic Constraints: 
+                CA:FALSE
+            X509v3 Key Usage: 
+                Digital Signature, Key Encipherment
+            X509v3 Subject Alternative Name: 
+                DNS:telegraf-operator.telegraf-operator.svc, DNS:telegraf-operator.svc
+            Netscape Comment: 
+                OpenSSL Generated Certificate
+    Signature Algorithm: sha256WithRSAEncryption
+         5a:e7:1a:4f:1c:ca:1b:6f:a3:f4:f1:fc:70:ff:80:58:73:d3:
+         79:78:a7:a2:e6:cc:cc:2b:ad:eb:30:f2:d1:28:13:96:b5:b1:
+         2f:11:19:f1:e2:c9:2d:f1:ec:77:17:45:c5:d7:89:86:40:7a:
+         f9:e2:1e:98:02:df:b7:f1:d8:74:4d:70:20:b1:ae:14:7c:f3:
+         57:b2:67:61:5b:7e:ef:66:90:7b:2d:41:52:e7:06:71:10:05:
+         8a:86:9d:fa:38:67:ab:02:f8:b7:43:c3:9c:d9:d9:4e:ef:1e:
+         ab:9f:2b:7e:85:9e:f7:5d:c9:e9:31:2a:80:f8:1b:f2:a7:61:
+         c3:0f:dd:c2:26:c1:d6:54:62:00:63:5c:a8:e8:95:85:b6:fb:
+         43:b4:35:49:b0:39:3e:3a:8d:fc:7c:d6:7e:48:43:5b:0b:70:
+         8a:91:9c:54:58:50:f1:21:fd:ee:2b:f7:48:f0:7c:44:37:f5:
+         0f:d7:f0:9b:84:00:0a:a6:59:92:0d:f6:83:a3:f3:95:2f:e6:
+         e7:ee:a7:24:15:5c:5f:da:e9:cf:b0:c5:47:d5:6b:61:f0:db:
+         f6:59:86:3d:af:e8:d2:3e:cc:75:32:b3:54:6a:47:07:29:e4:
+         a6:53:45:05:50:71:6a:fd:7b:67:d0:3d:c7:55:60:96:8e:ca:
+         0e:1b:0e:64:9b:97:65:bf:49:e9:d2:54:28:62:fd:69:8d:e0:
+         06:cf:16:a1:8b:10:29:32:72:32:77:0f:c6:7c:20:7f:d0:9f:
+         6b:4b:69:4d:5d:eb:09:bc:8e:a4:fd:a5:3e:0a:ba:73:fa:07:
+         b8:86:0f:cd:36:e6:12:dc:ac:bf:d0:d8:f5:a9:70:ae:b1:cf:
+         ca:94:fb:ce:c7:3e:93:15:f4:be:6d:d6:53:3e:23:b3:fd:7f:
+         02:73:aa:ee:bc:5a:a9:33:e3:54:c4:98:90:f4:86:6c:e3:86:
+         fa:c8:db:39:99:50:62:1d:0f:c4:75:e7:92:a3:b0:f4:c2:44:
+         27:68:1b:31:5b:ad:7d:80:cc:cb:29:7f:3d:b1:4c:de:cb:15:
+         4b:c0:bc:c4:30:ef:14:e0:42:11:c7:07:50:0e:e7:ec:31:d3:
+         14:df:1e:f8:e3:ec:9b:c6:59:85:d2:f9:d3:8c:98:a2:dc:8d:
+         7d:40:24:c7:69:9e:1f:8f:ab:bd:b8:ba:0e:8a:0d:26:11:be:
+         fe:8b:4e:a7:8a:2f:86:4f:26:29:e1:ba:e6:0c:c0:ef:40:08:
+         9c:ee:10:f0:b5:48:d6:dd:1a:96:9a:11:05:1f:85:72:8c:53:
+         9b:25:22:09:7a:58:b6:a3:1b:24:08:df:c4:50:a5:0a:a5:f0:
+         f8:87:f7:92:a4:74:d2:dd
+-----BEGIN CERTIFICATE-----
+MIIFWzCCA0OgAwIBAgIBATANBgkqhkiG9w0BAQsFADCBpzELMAkGA1UEBhMCVVMx
+ETAPBgNVBAgMCE1hcnlsYW5kMRIwEAYDVQQHDAlCYWx0aW1vcmUxGTAXBgNVBAoM
+EFRlc3QgQ0EsIExpbWl0ZWQxIzAhBgNVBAsMGlNlcnZlciBSZXNlYXJjaCBEZXBh
+cnRtZW50MRAwDgYDVQQDDAdUZXN0IENBMR8wHQYJKoZIhvcNAQkBFhB0ZXN0QGV4
+YW1wbGUuY29tMB4XDTIxMDUxMTIyMjYyN1oXDTI0MDIwNTIyMjYyN1owYzELMAkG
+A1UEBhMCVVMxCzAJBgNVBAgMAk1EMRIwEAYDVQQHDAlCYWx0aW1vcmUxHTAbBgNV
+BAoMFFRlc3QgU2VydmVyLCBMaW1pdGVkMRQwEgYDVQQDDAtUZXN0IFNlcnZlcjCC
+ASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAK2OGjosxFTDrXvWygLclfVX
+8XHZBKjn9CGOyBvqV2adbbM5Z6xOmTSV5Vr1m35gfFCfmTyuag7PYBcSA2k2THm5
+T+9FdnEz4/1ZxTMLeD1EpVQHo7OgtTeySD+FPE1WrOXRM0NVfjQmJqYfNcGPeE3L
+NY6KZ7Hx+8fKCunk/S7kisPQdsmdMvpye6QMT0OdmBYKJINl/fsdesq1KKN8tfOH
+5H+0ETCzI+weaFjCgf1d1TNoePIsFrwui4VJcwV0eIRyaUR/VNmFSZNHnJqSwebp
+NmHVU4UgZXSxL0Cw9nOqtOybIsV7mcVQhhWzb2d91QLrITDRWd1SpOGkYgzRi9kC
+AwEAAaOB1DCB0TAdBgNVHQ4EFgQUGDxTuaL4xluqD/wtUCv70+sErfQwHwYDVR0j
+BBgwFoAU26u/uCIPjn72Aiu2Cs51as8C+jEwCQYDVR0TBAIwADALBgNVHQ8EBAMC
+BaAwSQYDVR0RBEIwQIIndGVsZWdyYWYtb3BlcmF0b3IudGVsZWdyYWYtb3BlcmF0
+b3Iuc3ZjghV0ZWxlZ3JhZi1vcGVyYXRvci5zdmMwLAYJYIZIAYb4QgENBB8WHU9w
+ZW5TU0wgR2VuZXJhdGVkIENlcnRpZmljYXRlMA0GCSqGSIb3DQEBCwUAA4ICAQBa
+5xpPHMobb6P08fxw/4BYc9N5eKei5szMK63rMPLRKBOWtbEvERnx4skt8ex3F0XF
+14mGQHr54h6YAt+38dh0TXAgsa4UfPNXsmdhW37vZpB7LUFS5wZxEAWKhp36OGer
+Avi3Q8Oc2dlO7x6rnyt+hZ73XcnpMSqA+Bvyp2HDD93CJsHWVGIAY1yo6JWFtvtD
+tDVJsDk+Oo38fNZ+SENbC3CKkZxUWFDxIf3uK/dI8HxEN/UP1/CbhAAKplmSDfaD
+o/OVL+bn7qckFVxf2unPsMVH1Wth8Nv2WYY9r+jSPsx1MrNUakcHKeSmU0UFUHFq
+/Xtn0D3HVWCWjsoOGw5km5dlv0np0lQoYv1pjeAGzxahixApMnIydw/GfCB/0J9r
+S2lNXesJvI6k/aU+Crpz+ge4hg/NNuYS3Ky/0Nj1qXCusc/KlPvOxz6TFfS+bdZT
+PiOz/X8Cc6ruvFqpM+NUxJiQ9IZs44b6yNs5mVBiHQ/EdeeSo7D0wkQnaBsxW619
+gMzLKX89sUzeyxVLwLzEMO8U4EIRxwdQDufsMdMU3x744+ybxlmF0vnTjJii3I19
+QCTHaZ4fj6u9uLoOig0mEb7+i06nii+GTyYp4brmDMDvQAic7hDwtUjW3RqWmhEF
+H4VyjFObJSIJeli2oxskCN/EUKUKpfD4h/eSpHTS3Q==
+-----END CERTIFICATE-----

@@ -1,4 +1,7 @@
 apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: influxdb-dashboard-provisioning
 data:
   influxdb-dashboard-provisioning.yaml: |-
     apiVersion: 1
@@ -11,6 +14,3 @@ data:
       editable: true
       options:    
         path: /var/lib/grafana/dashboards/
-kind: ConfigMap
-metadata:
-  name: influxdb-dashboard-provisioning

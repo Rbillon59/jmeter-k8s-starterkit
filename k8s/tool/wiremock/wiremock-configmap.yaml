@@ -1,0 +1,71 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: wiremock-mapping
+data:
+  static.json: |-
+    {
+    "request": {
+      "method": "GET",
+      "url": "/static"
+      },
+        "response": {
+          "status": 200,
+          "fixedDelayMilliseconds": 50,
+          "jsonBody": {
+            "data": [{
+              "type": "product",
+              "id": "1",
+              "attributes": {
+                "productName": "Raspberry PI",
+                "productDescription": "Best product ever",
+                "price": 42,
+                "stock": 500
+              }
+            }]
+          }
+        }
+      }
+  dynamic.json: |-
+    {
+      "request": {
+        "method": "GET",
+        "urlPathPattern": "/dynamic/.*"
+      },
+      "response": {
+        "status": 200,
+        "fixedDelayMilliseconds": 1000,
+        "transformers": ["response-template"],
+        "jsonBody": {
+          "data": [{
+            "type": "product",
+            "id": "1",
+            "attributes": {
+              "productName": "{{request.pathSegments.[1]}}",
+              "productDescription": "Best product ever",
+              "price": 42,
+              "stock": 500
+            }
+          }]
+        }
+      }
+    }
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: wiremock-file
+data:
+  response-sample.json: |-
+    {
+      "data": [{
+        "type": "product",
+        "id": "1",
+        "attributes": {
+          "productName": "Raspberry PI",
+          "productDescription": "Best product ever",
+          "price": 42,
+          "stock": 500
+        }
+      }]
+    }

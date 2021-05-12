@@ -1,16 +1,18 @@
-apiVersion: batch/v1
-kind: Job
+apiVersion: apps/v1
+kind: Deployment
 metadata:
-  name: jmeter-master
+  name: wiremock
   labels:
-    jmeter_mode: master
+    type: mock
 spec:
-  completions: 1
-  backoffLimit: 0
+  replicas: 1
+  selector:
+    matchLabels:
+      type: mock
   template:
     metadata:
       labels:
-        jmeter_mode: master
+        type: mock
       annotations:
         telegraf.influxdata.com/class: "app"
         telegraf.influxdata.com/inputs: |+
@@ -69,47 +71,32 @@ spec:
             attribute = "TotalStartedThreadCount,ThreadCount,DaemonThreadCount,PeakThreadCount"
     spec:
       containers:
-      - name: jmmaster
-        image: rbillon59/jmeter-k8s-base:5.4.1
+      - name: wiremock
+        image: rbillon59/wiremock-loadtest:monitored
         imagePullPolicy: Always
-        volumeMounts:
-            - mountPath: /report
-              name: jmeter-data-dir
-        env:
-        - name: MODE
-          value: "MASTER"
-        - name: NODE_NAME
-          valueFrom:
-            fieldRef:
-              fieldPath: spec.nodeName
-        - name: POD_NAME
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.name
-        - name: NAMESPACE
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.namespace
-        command: ["/bin/bash"]
-        args: ["-c", "trap 'exit 0' SIGUSR1 && while true; do sleep 30;done"]
         ports:
-        - containerPort: 60000
+        - containerPort: 8080
+        volumeMounts:
+        - name: wiremock-mapping
+          mountPath: /home/wiremock/mappings
+        - name: wiremock-file
+          mountPath: /home/wiremock/__files
         resources:
           requests:
-            memory: "1024Mi"
-            cpu: "1024m"
+            memory: "256Mi"
+            cpu: "256m"
           limits:
-            memory: "2048Mi"
-            cpu: "1024m"
+            memory: "256Mi"
+            cpu: "256m"
         livenessProbe:
           exec:
             command:
             - cat
-            - /opt/jmeter/apache-jmeter/bin/jmeter
-          initialDelaySeconds: 5
-          periodSeconds: 5
-      restartPolicy: Never
+            - /bin/cat
       volumes:
-        - name: jmeter-data-dir
-          persistentVolumeClaim:
-            claimName: jmeter-data-dir-pvc
+        - name: wiremock-mapping
+          configMap:
+            name: wiremock-mapping
+        - name: wiremock-file
+          configMap:
+            name: wiremock-file

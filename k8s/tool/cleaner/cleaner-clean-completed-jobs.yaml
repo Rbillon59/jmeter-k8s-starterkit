@@ -1,0 +1,48 @@
+# ---
+# apiVersion: v1
+# kind: ServiceAccount
+# metadata:
+#   name: cleaner
+#   namespace: default
+# ---
+# apiVersion: rbac.authorization.k8s.io/v1
+# kind: Role
+# metadata:
+#   namespace: default
+#   name: my-completed-jobs-cleaner-role
+# rules:
+# - apiGroups: ["batch"]
+#   resources: ["jobs"]
+#   verbs: ["list", "delete"]
+# ---
+# apiVersion: rbac.authorization.k8s.io/v1
+# kind: RoleBinding
+# metadata:
+#   name: my-completed-jobs-cleaner-rolebinding
+#   namespace: default
+# roleRef:
+#   apiGroup: rbac.authorization.k8s.io
+#   kind: Role
+#   name: my-completed-jobs-cleaner-role
+# subjects:
+# - kind: ServiceAccount
+#   name: cleaner
+#   namespace: default
+# ---
+# apiVersion: batch/v1beta1
+# kind: CronJob
+# metadata:
+#   name: jobs-cleanup
+# spec:
+#   schedule: "*/1 * * * *"
+#   successfulJobsHistoryLimit: 0
+#   jobTemplate:
+#     spec:
+#       template:
+#         spec:
+#           serviceAccountName: cleaner
+#           containers:
+#           - name: kubectl-container
+#             image: bitnami/kubectl:latest
+#             command: ["sh", "-c", "kubectl delete jobs --selector jmeter_mode=slave --field-selector status.successful=1 && kubectl delete jobs --selector jmeter_mode=master --field-selector status.successful=1"]
+#           restartPolicy: Never

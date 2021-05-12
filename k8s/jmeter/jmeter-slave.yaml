@@ -12,6 +12,62 @@ spec:
     metadata:
       labels:
         jmeter_mode: slave
+      annotations:
+        telegraf.influxdata.com/class: "app"
+        telegraf.influxdata.com/inputs: |+
+          [[inputs.jolokia2_agent]]
+            urls = ["http://localhost:8778/jolokia"]
+
+            [[inputs.jolokia2_agent.metric]]
+              name  = "java_runtime"
+              mbean = "java.lang:type=Runtime"
+              paths = ["Uptime"]
+
+            [[inputs.jolokia2_agent.metric]]
+              name  = "java_memory"
+              mbean = "java.lang:type=Memory"
+              paths = ["HeapMemoryUsage", "NonHeapMemoryUsage", "ObjectPendingFinalizationCount"]
+
+            [[inputs.jolokia2_agent.metric]]
+              name     = "java_garbage_collector"
+              mbean    = "java.lang:name=*,type=GarbageCollector"
+              paths    = ["CollectionTime", "CollectionCount"]
+              tag_keys = ["name"]
+
+            [[inputs.jolokia2_agent.metric]]
+              name  = "java_last_garbage_collection"
+              mbean = "java.lang:name=G1 Young Generation,type=GarbageCollector"
+              paths = ["LastGcInfo/duration", "LastGcInfo/GcThreadCount", "LastGcInfo/memoryUsageAfterGc"]
+
+            [[inputs.jolokia2_agent.metric]]
+              name  = "java_threading"
+              mbean = "java.lang:type=Threading"
+              paths = ["TotalStartedThreadCount", "ThreadCount", "DaemonThreadCount", "PeakThreadCount"]
+
+            [[inputs.jolokia2_agent.metric]]
+              name  = "java_class_loading"
+              mbean = "java.lang:type=ClassLoading"
+              paths = ["LoadedClassCount", "UnloadedClassCount", "TotalLoadedClassCount"]
+
+            [[inputs.jolokia2_agent.metric]]
+              name     = "java_memory_pool"
+              mbean    = "java.lang:name=*,type=MemoryPool"
+              paths    = ["Usage", "PeakUsage", "CollectionUsage"]
+              tag_keys = ["name"]
+
+          [[inputs.jolokia]]
+            context = "/jolokia/"
+          [[inputs.jolokia.servers]]
+            host = "127.0.0.1"
+            port = "8778"
+          [[inputs.jolokia.metrics]]
+            name = "heap_memory_usage"
+            mbean  = "java.lang:type=Memory"
+            attribute = "HeapMemoryUsage"
+          [[inputs.jolokia.metrics]]
+            name = "thread_count"
+            mbean  = "java.lang:type=Threading"
+            attribute = "TotalStartedThreadCount,ThreadCount,DaemonThreadCount,PeakThreadCount"
     spec:
       containers:
       - name: jmslave
@@ -39,72 +95,3 @@ spec:
             - cat
             - /opt/jmeter/apache-jmeter/bin/jmeter
       restartPolicy: Never
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: jmeter-slaves-svc
-  labels:
-    jmeter_mode: slave
-spec:
-  clusterIP: None
-  ports:
-    - port: 1099
-      name: jmeter
-      targetPort: 1099
-    - port: 50000
-      name: rmi
-      targetPort: 50000
-    - port: 4445
-      name: stoptest
-      targetPort: 4445
-  selector:
-    jmeter_mode: slave
----
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: cleaner
-  namespace: default
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  namespace: default
-  name: my-completed-jobs-cleaner-role
-rules:
-- apiGroups: ["batch"]
-  resources: ["jobs"]
-  verbs: ["list", "delete"]
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: my-completed-jobs-cleaner-rolebinding
-  namespace: default
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: my-completed-jobs-cleaner-role
-subjects:
-- kind: ServiceAccount
-  name: cleaner
-  namespace: default
----
-apiVersion: batch/v1beta1
-kind: CronJob
-metadata:
-  name: jobs-cleanup
-spec:
-  schedule: "*/1 * * * *"
-  successfulJobsHistoryLimit: 0
-  jobTemplate:
-    spec:
-      template:
-        spec:
-          serviceAccountName: cleaner
-          containers:
-          - name: kubectl-container
-            image: bitnami/kubectl:latest
-            command: ["sh", "-c", "kubectl delete jobs --selector jmeter_mode=slave --field-selector status.successful=1 && kubectl delete jobs --selector jmeter_mode=master --field-selector status.successful=1"]
-          restartPolicy: Never
