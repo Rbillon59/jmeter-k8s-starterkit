@@ -23745,7 +23745,7 @@ data:
             "text": "All",
             "value": "$__all"
           },
-          "datasource": "Influx-Jmeter",
+          "datasource": "default",
           "definition": "",
           "error": null,
           "hide": 0,
