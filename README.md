@@ -15,24 +15,19 @@ Thanks to [Kubernauts](https://github.com/kubernauts/jmeter-kubernetes) for the 
 |-------------|:------------:|-------------
 | Flexibility at run time      | Yes | With .env file (threads, duration, host) |
 | Distributed testing      | Yes | Virtually unlimited with auto-scaling     |
-| Plugin support | Yes | Modules are installed at run time by scanning the JMX needs      |
-| Module support | Yes | JMeter include controller are supported if *path* is just the name of the file in the *Include Controler*
-| CSV support | Yes | CSV files are splitted prior to launch the test and unique pieces copied to each pods, in the JMeter scenario, just put the name of the file in the *path* field |
+| JMeter Plugin support | Yes | Modules are installed at run time by scanning the JMX needs      |
+| JMeter Module support | Yes | JMeter include controller are supported if *path* is just the name of the file in the *Include Controler*
+| JMeter CSV support | Yes | CSV files are splitted prior to launch the test and unique pieces copied to each pods, in the JMeter scenario, just put the name of the file in the *path* field |
 | Node auto-scaling | Yes | By requesting ressources at deployment time, the cluster will scale automatically if needed |
 | Reporting | Yes | The JMeter report is generated at the end of the test inside the master pod if the -r flag is used in the start_test.sh|
 | Live monitoring | Yes | An InfluxDB instance and a Grafana are available in the stack |
 | Report persistance | Yes | A persistence volume is used to store the reports and results |
 | Injector nodes monitoring | Yes | Even if autoscaling, a Daemon Set will deploy a telegraf instance and persist the monitoring data to InfluxDB. A board is available in Grafana to show the Telegraf monitoring
 | Multi thread group support | Not really | You can add multi thread groups, but if you want to use JMeter properties (like threads etc..) you need to add them in the .env and update the start_test.sh to update the "user_param" variable to add the desired variables |
-
-
-Why do not include the Live reporting tools like InfluxDB and Grafana ?  
-
-Because most of the time there is a already established live monitoring system inside your infrastructure that you can use.   
-It complexify a lot the repository template that I want to keep simple and generic.   
-Managing statefulness and file persistance in Kubernetes bring it complexity too.  
-
-Here you have the necessary tools to run a performance test correctly through Kubernetes and it's the goal of the repository !
+| Mocking service | Yes | A deployment of Wiremock is done inside the cluster, the mappings are done inside the wiremock configmap. Also an horizontal pod autoscaler have been added
+| JVM Monitoring | Yes | JMeter and Wiremock are both Java application. They have been packaged with Jolokia and Telegraf and are monitored
+| Pre built Grafana Dashboards | Yes | 4 Grafana dashboards are shipped with the starter kit. Node monitoring, Kubernetes ressources monitoring, JVM monitoring and JMeter result dashboard.
+| Ressource friendly | Yes | JMeter is deployed as batch job inside the cluster. Thus at the end  of the execution, pods are deleted and ressources freed
 
 
 ## Getting started
@@ -41,7 +36,6 @@ Prerequisites :
 - A kubernetes cluster (of course)
 - kubectl installed and a usable context to work with
 - (Optionnal) A JMeter scenario (the default one attack Google.com)
-- (Optionnal) An external JMeter live reporting solution (like InfluxDB with Grafana).
 
 ### 1. Preparing the repository
 
@@ -63,12 +57,18 @@ Put your JMeter modules (include controlers) inside the `module` folder, child o
 |       +-- .env
 ```
 
-### 2. Deploying JMeter
+### 2. Deploying the Stack
 
-`kubectl apply -f deploy_master.yaml -f deploy_slaves.yaml`
+`kubectl apply -R -f k8s`
 
-This will deploy services, and pods. That's it. The containers inside the pods are told to sleep until receiving an order.
+This will deploy all the needed applications :
 
+- JMeter master and slaves
+- Telegraf operator to automatically monitor the specified applications
+- Telegraf as a DaemonSet on all the nodes
+- InfluxDB to store the date (with a 5GB volume in a PVC)
+- Grafana with a LB services and 4 included dashboard
+- Wiremock
 
 ### 3. Starting the test
 
@@ -86,7 +86,8 @@ Usage :
 
 
 **The script will :**
-- Scale the JMeter slave deployment to 0 to delete all remaining pods from a previous. (Needed because if not recreated, the slave pods have already launched the jmeter-server process and done the plugin installation. And if you launch another with different plugins needs, the plugin installation step is not triggered)
+
+- Delete and create again the JMeter jobs.
 - Scale the JMeter slave deployment to the desired number of injectors
 - Wait to all the slaves pods to be available. Here, available means that the filesystem is reacheable (liveness probe that cat a file inside the fs)
 - If needed will split the CSV locally then copy them inside the slave pods
@@ -96,10 +97,9 @@ Usage :
 - Send the JMX to the controller 
 - Generate a shell script and send it to the controller to wait for all pods to have their JMeter slave port listening (TCP 1099) and launch the performance test.
 
-*Pro tip : Even if the process is launched with `kubectl exec`, JMeter will write it logs to stdout. So a `kubectl -n <namespace> logs jmeter-master-<podId>` will give you the JMeter controller logs*
 
 
 ### 4. Gethering results from the master pod
 
-You can run `kubectl cp -n <namespace> <master-pod-id>:/opt/jmeter/apache-jmeter/bin/<result> $PWD/<local-result-name>`
-You can do this for the generated report and the JTL for example.
+You can run `kubectl cp -n <namespace> <master-pod-id>:/opt/jmeter/apache-jmeter/bin/<result> $PWD/<local-result-name>`  
+You can do this for the generated report and the JTL for example.  
