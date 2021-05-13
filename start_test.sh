@@ -78,7 +78,7 @@ fi
 
 # Recreating each pods
 logit "INFO" "Recreating pod set"
-kubectl -n "${namespace}" delete -f k8s/jmeter
+kubectl -n "${namespace}" delete -f k8s/jmeter 2> /dev/null
 kubectl -n "${namespace}" apply -f k8s/jmeter
 kubectl -n "${namespace}" patch job jmeter-slaves -p '{"spec":{"parallelism":0}}'
 logit "INFO" "Waiting for all slaves pods to be terminated before recreating the pod set"
