@@ -1,4 +1,6 @@
 
+You can follow the full tutorial here : https://romain-billon.medium.com/ultimate-jmeter-kubernetes-starter-kit-7eb1a823649b
+
 # JMeter k8s startekit
 
 This is a template repository from which you can start load testing faster when injecting load from a kubernetes cluster.
