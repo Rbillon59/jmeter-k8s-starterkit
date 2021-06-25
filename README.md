@@ -82,7 +82,7 @@ This will deploy all the needed applications :
 Usage :
 ```sh
    -j <filename.jmx>
-   -n <namespace >for namespace previously created (default the last created with the deploy script)
+   -n <namespace>
    -c flag to split and copy csv if you use csv in your test
    -m flag to copy fragmented jmx present in scenario/project/module if you use include controller and external test fragment
    -i <injectorNumber> to scale slaves pods to the desired number of JMeter injectors

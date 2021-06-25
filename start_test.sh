@@ -28,7 +28,7 @@ logit()
 usage()
 {
   logit "INFO" "-j <filename.jmx>"
-  logit "INFO" "-n <namespace >for namespace previously created (default the last created with the deploy script)"
+  logit "INFO" "-n <namespace>"
   logit "INFO" "-c flag to split and copy csv if you use csv in your test"
   logit "INFO" "-m flag to copy fragmented jmx present in scenario/project/module if you use include controller and external test fragment"
   logit "INFO" "-i <injectorNumber> to scale slaves pods to the desired number of JMeter injectors"
