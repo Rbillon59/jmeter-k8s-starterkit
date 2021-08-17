@@ -64,7 +64,7 @@ Put your JMeter modules (include controlers) inside the `module` folder, child o
 
 ### 2. Deploying the Stack
 
-`kubectl apply -R -f k8s`
+`kubectl create -R -f k8s/`
 
 This will deploy all the needed applications :
 
