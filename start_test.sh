@@ -178,8 +178,8 @@ if [ -n "${csv}" ]; then
             csvfile="${csvfilefull##*/}"
             logit "INFO" "Processing file.. $csvfile"
             lines_total=$(cat "${csvfilefull}" | wc -l)
-            logit "INFO" "split --suffix-length=\"${slave_digit}\" -d -l $((lines_total/slave_num)) \"${csvfilefull}\" \"${dataset_dir}/\""
-            split --suffix-length="${slave_digit}" -d -l $((lines_total/slave_num)) "${csvfilefull}" "${dataset_dir}/"
+            logit "INFO" "split --suffix-length=\"${slave_digit}\" -d -l $((lines_total/slave_num)) \"${csvfilefull}\" \"${csvfilefull}/\""
+            split --suffix-length="${slave_digit}" -d -l $((lines_total/slave_num)) "${csvfilefull}" "${csvfilefull}"
 
             for ((i=0; i<end; i++))
             do
@@ -197,8 +197,8 @@ if [ -n "${csv}" ]; then
                     j=${i}                    
                 fi
 
-                printf "Copy %s to %s on %s\n" "${j}" "${csvfile}" "${slave_pods[$i]}"
-                kubectl -n "${namespace}" cp -c jmslave "${dataset_dir}/${j}" "${slave_pods[$i]}":"${jmeter_directory}/${csvfile}" &
+                printf "Copy %s to %s on %s\n" "${csvfilefull}${j}" "${csvfile}" "${slave_pods[$i]}"
+                kubectl -n "${namespace}" cp -c jmslave "${csvfilefull}${j}" "${slave_pods[$i]}":"${jmeter_directory}/${csvfile}" &
             done
     done
 fi
