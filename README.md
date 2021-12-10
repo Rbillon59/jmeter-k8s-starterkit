@@ -110,5 +110,5 @@ Usage :
 
 ### 4. Gethering results from the master pod
 
-You can run `kubectl cp -n <namespace> <master-pod-id>:/opt/jmeter/apache-jmeter/bin/<result> $PWD/<local-result-name>`  
+You can run `kubectl cp -n <namespace> <master-pod-id>:/report/<result> ${PWD}/<local-result-name>`  
 You can do this for the generated report and the JTL for example.  
