@@ -60,8 +60,8 @@ spec:
               readOnly: true
             - name: docker-socket
               mountPath: /var/run/docker.sock
-            - name: utmp
-              mountPath: /var/run/utmp
+            # - name: utmp
+            #   mountPath: /var/run/utmp
               readOnly: true
             - name: config
               mountPath: /etc/telegraf
@@ -76,9 +76,9 @@ spec:
         - name: proc
           hostPath:
             path: /proc
-        - name: utmp
-          hostPath:
-            path: /var/run/utmp
+        # - name: utmp
+        #   hostPath:
+        #     path: /var/run/utmp
         - name: config
           configMap:
             name: telegraf
