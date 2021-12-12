@@ -110,5 +110,19 @@ Usage :
 
 ### 4. Gethering results from the master pod
 
-You can run `kubectl cp -n <namespace> <master-pod-id>:/opt/jmeter/apache-jmeter/bin/<result> $PWD/<local-result-name>`  
+After the test have been executed, the master pod job is in completed state and then, is deleted by the cleaner cronjob.
+
+To be able to get your result, a jmeter master pod must be in ***running state*** (because the pod is mounting the persistantVolume with the reports inside).
+
+*The master pod default behaviour is to wait indefinetly*
+
+You can run   
+
+```sh
+# If a master pod is not available, create one
+kubectl apply -f k8s/jmeter/jmeter-master.yaml
+# Wait for the pod is Running, then
+kubectl cp -n <namespace> <master-pod-id>:/report/<result> ${PWD}/<local-result-name>
+# To copy the content of the report from the pod to your local
+```
 You can do this for the generated report and the JTL for example.  
