@@ -50,7 +50,7 @@ webhooks:
     # namespaceSelector:
     #   matchLabels:
     #     controller: telegraf-operator
-    admissionReviewVersions: ["v1"]
+    admissionReviewVersions: ["v1beta1", "v1"]
     sideEffects: None
     clientConfig:
       service:
