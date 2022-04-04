@@ -68,6 +68,9 @@ spec:
             mbean  = "java.lang:type=Threading"
             attribute = "TotalStartedThreadCount,ThreadCount,DaemonThreadCount,PeakThreadCount"
     spec:
+      securityContext:
+        runAsUser: 1000
+        fsGroup: 1000
       containers:
       - name: jmmaster
         image: rbillon59/jmeter-k8s-base:5.4.1
