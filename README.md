@@ -14,7 +14,6 @@ You will find inside it the necessary to organize and run your performance scena
 Thanks to [Kubernauts](https://github.com/kubernauts/jmeter-kubernetes) for the inspiration !
 
 
-
 ## Features
 
 <p align="center"><a href="https://ibb.co/ccM9RJp"><img src="https://i.ibb.co/0j8L1qW/jmeter-starterkit.jpg" alt="jmeter-starterkit" border="0" /></a></p>
@@ -68,6 +67,8 @@ Put your JMeter modules (include controlers) inside the `module` folder, child o
 
 ### 2. Deploying the Stack
 
+#### From this repository
+
 `kubectl create -R -f k8s/`
 
 This will deploy all the needed applications :
@@ -78,6 +79,17 @@ This will deploy all the needed applications :
 - InfluxDB to store the date (with a 5GB volume in a PVC)
 - Grafana with a LB services and 4 included dashboard
 - Wiremock
+
+#### Using helm
+
+> This helm project is at an very early stage, feel free to test it and open any issue for any feedbacks. Thanks you
+
+```shell
+helm repo add jmeter-k8s-starterkit-helm-charts https://rbillon59.github.io/jmeter-k8s-starterkit-helm-chart/
+helm install jmeter-k8s-starterkit-helm-charts/jmeter-k8s-starterkit --generate-name
+```
+
+
 
 ### 3. Starting the test
 
