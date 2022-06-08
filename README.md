@@ -5,7 +5,7 @@ If you enjoy and want to support my work :
 
 <a href="https://www.buymeacoffee.com/rbill" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png" alt="Buy Me A Coffee" style="height: 41px !important;width: 174px !important;box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;-webkit-box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;" ></a>
 
-# JMeter k8s startekit
+# JMeter k8s starterkit
 
 This is a template repository from which you can start load testing faster when injecting load from a kubernetes cluster.
 
@@ -126,7 +126,7 @@ After the test have been executed, the master pod job is in completed state and 
 
 To be able to get your result, a jmeter master pod must be in ***running state*** (because the pod is mounting the persistantVolume with the reports inside).
 
-*The master pod default behaviour is to wait indefinetly*
+*The master pod default behaviour is to wait until the load_test script is present in the pod*
 
 You can run   
 
