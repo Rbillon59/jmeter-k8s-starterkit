@@ -94,7 +94,7 @@ spec:
             fieldRef:
               fieldPath: metadata.namespace
         command: ["/bin/bash"]
-        args: ["-c", "trap 'exit 0' SIGUSR1 && while true; do sleep 30;done"]
+        args: ["-c", "trap 'exit 0' SIGUSR1 && until [ -f /opt/jmeter/load_test ]; do sleep 5; done && /bin/bash /opt/jmeter/load_test"]
         ports:
         - containerPort: 60000
         resources:

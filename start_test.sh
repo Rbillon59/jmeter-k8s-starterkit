@@ -236,14 +236,25 @@ echo "slave_array=(${slave_array[@]}); index=${slave_num} && while [ \${index} -
     echo "echo \"Installing needed plugins for master\""
     echo "cd /opt/jmeter/apache-jmeter/bin" 
     echo "sh PluginsManagerCMD.sh install-for-jmx ${jmx}" 
+    echo "echo \"Done installing plugins, launching test\""
     echo "jmeter ${param_host} ${param_user} ${report_command_line} --logfile /report/${jmx}_$(date +"%F_%H%M%S").jtl --nongui --testfile ${jmx} -Dserver.rmi.ssl.disable=true --remoteexit --remotestart ${slave_list} >> jmeter-master.out 2>> jmeter-master.err &"
     echo "trap 'kill -10 1' EXIT INT TERM"
     echo "java -jar /opt/jmeter/apache-jmeter/lib/jolokia-java-agent.jar start JMeter >> jmeter-master.out 2>> jmeter-master.err"
-    echo "wait"
+    echo "echo \"Starting load test at : $(date)\" && wait"
 } >> "scenario/${jmx_dir}/load_test.sh"
 
 logit "INFO" "Copying scenario/${jmx_dir}/load_test.sh into  ${master_pod}:/opt/jmeter/load_test"
 kubectl cp -c jmmaster "scenario/${jmx_dir}/load_test.sh" -n "${namespace}" "${master_pod}:/opt/jmeter/load_test"
 
 logit "INFO" "Starting the performance test"
-kubectl exec -c jmmaster -i -n "${namespace}" "${master_pod}" -- /bin/bash "/opt/jmeter/load_test"
+logit "INFO" "##################################################"
+logit "INFO" "You can follow test execution summary on the master pod by running :"
+logit "INFO" "         kubectl logs -f -c jmmaster -n ${namespace} ${master_pod}"
+logit "INFO" "##################################################"
+logit "INFO" "Also using Grafana : kubectl ${namespace} port-forward svc/grafana 8443:443"
+GRAFANA_LOGIN=$(kubectl -n "${namespace}" get secret grafana-creds -o yaml | grep GF_SECURITY_ADMIN_USER: | awk -F" " '{print $2}' | base64 --decode)
+GRAFANA_PASSWORD=$(kubectl -n "${namespace}" get secret grafana-creds -o yaml | grep GF_SECURITY_ADMIN_PASSWORD: | awk -F" " '{print $2}' | base64 --decode)
+logit "INFO" " LOGIN : ${GRAFANA_LOGIN}"
+logit "INFO" " PASSWORD : ${GRAFANA_PASSWORD}"
+logit "INFO" "################################################"
+
