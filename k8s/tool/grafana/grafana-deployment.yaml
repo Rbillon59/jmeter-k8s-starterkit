@@ -18,7 +18,7 @@ spec:
       - envFrom:
         - secretRef:
             name: grafana-creds
-        image: docker.io/grafana/grafana:7.3.3
+        image: docker.io/grafana/grafana:latest
         name: grafana
         resources:
           requests:
