@@ -5,7 +5,6 @@ metadata:
   labels:
     app: influxdb
 spec:
-  clusterIP: None
   ports:
     - port: 8086
       protocol: TCP
