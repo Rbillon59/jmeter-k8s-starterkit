@@ -17,7 +17,7 @@ spec:
       serviceAccountName: telegraf
       containers:
         - name: telegraf
-          image: docker.io/telegraf:1.5.2
+          image: docker.io/telegraf:latest
           env:
             - name: HOSTNAME
               valueFrom:
