@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: grafana-pv-volume
+  name: grafana-pv
   labels:
     type: local
 spec:

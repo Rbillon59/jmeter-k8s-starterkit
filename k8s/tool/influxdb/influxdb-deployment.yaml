@@ -34,4 +34,4 @@ spec:
       volumes:
         - name: var-lib-influxdb
           persistentVolumeClaim:
-            claimName: influxdb-pvc
+            claimName: influxdb-pv-claim 

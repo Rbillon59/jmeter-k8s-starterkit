@@ -1,10 +1,15 @@
+---
+---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: jmeter-data-dir-pvc
 spec:
+  storageClassName: manual
   accessModes:
     - ReadWriteMany
   resources:
     requests:
-      storage: 5Gi
+      storage: 10Gi
+  volumeName: jmeter-pv
+

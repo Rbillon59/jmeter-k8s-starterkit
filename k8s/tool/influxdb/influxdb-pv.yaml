@@ -2,14 +2,14 @@
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: influxdb-pv-volume
+  name: influxdb-pv
   labels:
-    type: local
+    db: influxdb
 spec:
   storageClassName: manual
   capacity:
     storage: 10Gi
   accessModes:
-    - ReadWriteMany
+    - ReadWriteOnce
   hostPath:
-    path: "/mnt/data/influxdb"
+    path: "/mnt/data"
