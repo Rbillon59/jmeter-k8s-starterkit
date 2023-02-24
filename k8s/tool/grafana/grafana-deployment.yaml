@@ -38,6 +38,8 @@ spec:
           - name: influxdb-datasource-provisioning
             mountPath: /etc/grafana/provisioning/datasources
       securityContext:
+        runAsUser: 0 
+          #        runAsGroup: 472
         fsGroup: 472
       volumes:
         - name: data-dir
