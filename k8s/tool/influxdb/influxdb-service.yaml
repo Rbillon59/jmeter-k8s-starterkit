@@ -9,6 +9,6 @@ spec:
     - port: 8086
       protocol: TCP
       targetPort: 8086
-  type: NodePort
+  type: ClusterIP
   selector:
     app: influxdb
