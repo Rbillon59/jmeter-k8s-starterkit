@@ -36,8 +36,10 @@ spec:
 
             [[inputs.jolokia2_agent.metric]]
               name  = "java_last_garbage_collection"
-              mbean = "java.lang:name=G1 Young Generation,type=GarbageCollector"
-              paths = ["LastGcInfo/duration", "LastGcInfo/GcThreadCount", "LastGcInfo/memoryUsageAfterGc"]
+              mbean = "java.lang:name=*,type=GarbageCollector"
+              paths = ["LastGcInfo"]
+              tag_keys = ["name"]
+
 
             [[inputs.jolokia2_agent.metric]]
               name  = "java_threading"
