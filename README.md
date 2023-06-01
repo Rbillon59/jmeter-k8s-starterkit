@@ -41,7 +41,7 @@ Thanks to [Kubernauts](https://github.com/kubernauts/jmeter-kubernetes) for the 
 ## Getting started
 
 Prerequisites : 
-- A kubernetes cluster (of course)
+- A kubernetes cluster (of course) (amd64 and arm64 architecture are supported)
 - kubectl installed and a usable context to work with
 - (Optionnal) A JMeter scenario (the default one attack Google.com)
 
