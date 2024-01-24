@@ -39,6 +39,7 @@ cp ../aws-files/grafana/* ../../k8s/tool/grafana
 cp ../aws-files/jmeter/* ../../k8s/jmeter
 volumes=(`aws ec2 describe-volumes --query 'Volumes[?Tags && Size >= \`5\`].VolumeId' --output text`)
 sed -i "s/##VolumeId##/${volumes[0]}/g" ../../k8s/jmeter/jmeter-pv.yaml
+cd ../../
 kubectl apply -R -f k8s/
 ./start_test.sh -j $scenario -n $namespace -c -m -i $injectors -r
-cd ../scripts
+cd aws/scripts

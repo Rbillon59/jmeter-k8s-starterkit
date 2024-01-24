@@ -40,11 +40,11 @@ aws cloudformation create-stack \
 	--profile $profile
 aws cloudformation wait stack-create-complete --stack-name $stack --profile $profile
 ./connectToEKs.sh -s $stack -r $region -p $profile
-cd ../jmeter-k8s-starterkit
+cd ../../
 kubectl create -R -f k8s/
 helm repo add aws-ebs-csi-driver https://kubernetes-sigs.github.io/aws-ebs-csi-driver
 helm repo add jmeter-k8s-starterkit-helm-charts https://rbillon59.github.io/jmeter-k8s-starterkit-helm-chart/
 helm repo update
 helm install aws-ebs-csi-driver aws-ebs-csi-driver/aws-ebs-csi-driver
 helm install jmeter-k8s-starterkit-helm-charts/jmeter-k8s-starterkit --generate-name
-cd ../scripts
+cd aws/scripts
