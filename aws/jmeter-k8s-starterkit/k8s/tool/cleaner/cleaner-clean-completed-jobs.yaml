@@ -1,0 +1,76 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cleaner
+  namespace: default
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: default
+  name: my-completed-jobs-cleaner-role
+rules:
+- apiGroups: ["batch"]
+  resources: ["jobs"]
+  verbs: ["list", "delete"]
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["*"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: my-completed-jobs-cleaner-rolebinding
+  namespace: default
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: my-completed-jobs-cleaner-role
+subjects:
+- kind: ServiceAccount
+  name: cleaner
+  namespace: default
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cleaner-script
+
+  labels:
+    k8s-app: cleaner
+data:
+  clean.sh: |+
+    #!/bin/sh
+    set -x 
+    master_pod=$(kubectl get pod -o name --selector jmeter_mode=master)
+    status=$(kubectl describe ${master_pod} | grep Reason: | awk -F " " '{print $2}')
+    if [ "${status}" = "Completed" ]; then
+      kubectl delete jobs --selector jmeter_mode=slave 
+      kubectl delete jobs --selector jmeter_mode=master
+    fi
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: jobs-cleanup
+spec:
+  schedule: "*/1 * * * *"
+  successfulJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: cleaner
+          containers:
+          - name: kubectl-container
+            image: bitnami/kubectl:latest
+            command: ["sh", "/tmp/clean.sh"]
+            volumeMounts:
+            - name: cleaner-script
+              mountPath: /tmp/
+          restartPolicy: Never
+          volumes:
+          - name: cleaner-script
+            configMap:
+              name: cleaner-script

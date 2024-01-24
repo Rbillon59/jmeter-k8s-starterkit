@@ -1,0 +1,118 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: jmeter-master
+  labels:
+    jmeter_mode: master
+spec:
+  completions: 1
+  backoffLimit: 0
+  template:
+    metadata:
+      labels:
+        jmeter_mode: master
+      annotations:
+        telegraf.influxdata.com/class: "app"
+        telegraf.influxdata.com/inputs: |+
+          [[inputs.jolokia2_agent]]
+            urls = ["http://localhost:8778/jolokia"]
+
+            [[inputs.jolokia2_agent.metric]]
+              name  = "java_runtime"
+              mbean = "java.lang:type=Runtime"
+              paths = ["Uptime"]
+
+            [[inputs.jolokia2_agent.metric]]
+              name  = "java_memory"
+              mbean = "java.lang:type=Memory"
+              paths = ["HeapMemoryUsage", "NonHeapMemoryUsage", "ObjectPendingFinalizationCount"]
+
+            [[inputs.jolokia2_agent.metric]]
+              name     = "java_garbage_collector"
+              mbean    = "java.lang:name=*,type=GarbageCollector"
+              paths    = ["CollectionTime", "CollectionCount"]
+              tag_keys = ["name"]
+
+            [[inputs.jolokia2_agent.metric]]
+              name  = "java_last_garbage_collection"
+              mbean = "java.lang:name=G1 Young Generation,type=GarbageCollector"
+              paths = ["LastGcInfo/duration", "LastGcInfo/GcThreadCount", "LastGcInfo/memoryUsageAfterGc"]
+
+            [[inputs.jolokia2_agent.metric]]
+              name  = "java_threading"
+              mbean = "java.lang:type=Threading"
+              paths = ["TotalStartedThreadCount", "ThreadCount", "DaemonThreadCount", "PeakThreadCount"]
+
+            [[inputs.jolokia2_agent.metric]]
+              name  = "java_class_loading"
+              mbean = "java.lang:type=ClassLoading"
+              paths = ["LoadedClassCount", "UnloadedClassCount", "TotalLoadedClassCount"]
+
+            [[inputs.jolokia2_agent.metric]]
+              name     = "java_memory_pool"
+              mbean    = "java.lang:name=*,type=MemoryPool"
+              paths    = ["Usage", "PeakUsage", "CollectionUsage"]
+              tag_keys = ["name"]
+
+          [[inputs.jolokia]]
+            context = "/jolokia/"
+          [[inputs.jolokia.servers]]
+            host = "127.0.0.1"
+            port = "8778"
+          [[inputs.jolokia.metrics]]
+            name = "heap_memory_usage"
+            mbean  = "java.lang:type=Memory"
+            attribute = "HeapMemoryUsage"
+          [[inputs.jolokia.metrics]]
+            name = "thread_count"
+            mbean  = "java.lang:type=Threading"
+            attribute = "TotalStartedThreadCount,ThreadCount,DaemonThreadCount,PeakThreadCount"
+    spec:
+      securityContext:
+        runAsUser: 1000
+        fsGroup: 1000
+      containers:
+      - name: jmmaster
+        image: rbillon59/jmeter-k8s-base:5.4.1
+        imagePullPolicy: Always
+        volumeMounts:
+            - mountPath: /report
+              name: jmeter-data-dir
+        env:
+        - name: MODE
+          value: "MASTER"
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        command: ["/bin/bash"]
+        args: ["-c", "trap 'exit 0' SIGUSR1 && while true; do sleep 30;done"]
+        ports:
+        - containerPort: 60000
+        resources:
+          requests:
+            memory: "1024Mi"
+            cpu: "1024m"
+          limits:
+            memory: "2048Mi"
+            cpu: "1024m"
+        livenessProbe:
+          exec:
+            command:
+            - cat
+            - /opt/jmeter/apache-jmeter/bin/jmeter
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      restartPolicy: Never
+      volumes:
+        - name: jmeter-data-dir
+          persistentVolumeClaim:
+            claimName: jmeter-data-dir-pvc

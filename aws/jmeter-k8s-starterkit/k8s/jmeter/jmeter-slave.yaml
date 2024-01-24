@@ -1,0 +1,97 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: jmeter-slaves
+  labels:
+    jmeter_mode: slave
+spec:
+  ttlSecondsAfterFinished: 60
+  backoffLimit: 0
+  parallelism: 0
+  template:
+    metadata:
+      labels:
+        jmeter_mode: slave
+      annotations:
+        telegraf.influxdata.com/class: "app"
+        telegraf.influxdata.com/inputs: |+
+          [[inputs.jolokia2_agent]]
+            urls = ["http://localhost:8778/jolokia"]
+
+            [[inputs.jolokia2_agent.metric]]
+              name  = "java_runtime"
+              mbean = "java.lang:type=Runtime"
+              paths = ["Uptime"]
+
+            [[inputs.jolokia2_agent.metric]]
+              name  = "java_memory"
+              mbean = "java.lang:type=Memory"
+              paths = ["HeapMemoryUsage", "NonHeapMemoryUsage", "ObjectPendingFinalizationCount"]
+
+            [[inputs.jolokia2_agent.metric]]
+              name     = "java_garbage_collector"
+              mbean    = "java.lang:name=*,type=GarbageCollector"
+              paths    = ["CollectionTime", "CollectionCount"]
+              tag_keys = ["name"]
+
+            [[inputs.jolokia2_agent.metric]]
+              name  = "java_last_garbage_collection"
+              mbean = "java.lang:name=G1 Young Generation,type=GarbageCollector"
+              paths = ["LastGcInfo/duration", "LastGcInfo/GcThreadCount", "LastGcInfo/memoryUsageAfterGc"]
+
+            [[inputs.jolokia2_agent.metric]]
+              name  = "java_threading"
+              mbean = "java.lang:type=Threading"
+              paths = ["TotalStartedThreadCount", "ThreadCount", "DaemonThreadCount", "PeakThreadCount"]
+
+            [[inputs.jolokia2_agent.metric]]
+              name  = "java_class_loading"
+              mbean = "java.lang:type=ClassLoading"
+              paths = ["LoadedClassCount", "UnloadedClassCount", "TotalLoadedClassCount"]
+
+            [[inputs.jolokia2_agent.metric]]
+              name     = "java_memory_pool"
+              mbean    = "java.lang:name=*,type=MemoryPool"
+              paths    = ["Usage", "PeakUsage", "CollectionUsage"]
+              tag_keys = ["name"]
+
+          [[inputs.jolokia]]
+            context = "/jolokia/"
+          [[inputs.jolokia.servers]]
+            host = "127.0.0.1"
+            port = "8778"
+          [[inputs.jolokia.metrics]]
+            name = "heap_memory_usage"
+            mbean  = "java.lang:type=Memory"
+            attribute = "HeapMemoryUsage"
+          [[inputs.jolokia.metrics]]
+            name = "thread_count"
+            mbean  = "java.lang:type=Threading"
+            attribute = "TotalStartedThreadCount,ThreadCount,DaemonThreadCount,PeakThreadCount"
+    spec:
+      containers:
+      - name: jmslave
+        image: rbillon59/jmeter-k8s-base:5.4.1
+        imagePullPolicy: Always
+        env:
+        - name: MODE
+          value: "SLAVE"
+        command: ["/bin/bash"]
+        args: ["-c", "trap 'exit 0' SIGUSR1 && while true; do sleep 30;done"]
+        ports:
+        - containerPort: 1099
+        - containerPort: 50000
+        - containerPort: 4445
+        resources:
+          requests:
+            memory: "1024Mi"
+            cpu: "1024m"
+          limits:
+            memory: "1024Mi"
+            cpu: "1024m"
+        livenessProbe:
+          exec:
+            command:
+            - cat
+            - /opt/jmeter/apache-jmeter/bin/jmeter
+      restartPolicy: Never

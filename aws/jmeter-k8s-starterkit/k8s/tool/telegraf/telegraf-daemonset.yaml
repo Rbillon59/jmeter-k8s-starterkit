@@ -1,0 +1,111 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: telegraf
+
+  labels:
+    k8s-app: telegraf
+spec:
+  selector:
+    matchLabels:
+      name: telegraf
+  template:
+    metadata:
+      labels:
+        name: telegraf
+    spec:
+      serviceAccountName: telegraf
+      containers:
+        - name: telegraf
+          image: docker.io/telegraf:1.5.2
+          env:
+            - name: HOSTNAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: NODEIP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            - name: "HOST_PROC"
+              value: "/rootfs/proc"
+            - name: "HOST_SYS"
+              value: "/rootfs/sys"
+            - name: INFLUXDB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: influxdb-creds
+                  key: INFLUXDB_USER
+            - name: INFLUXDB_USER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: influxdb-creds
+                  key: INFLUXDB_USER_PASSWORD
+            - name: INFLUXDB_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: influxdb-creds
+                  key: INFLUXDB_HOST
+            - name: INFLUXDB_DB
+              valueFrom:
+                secretKeyRef:
+                  name: influxdb-creds
+                  key: INFLUXDB_DB
+          volumeMounts:
+            - name: sys
+              mountPath: /rootfs/sys
+              readOnly: true
+            - name: proc
+              mountPath: /rootfs/proc
+              readOnly: true
+            - name: docker-socket
+              mountPath: /var/run/docker.sock
+            # - name: utmp
+            #   mountPath: /var/run/utmp
+              readOnly: true
+            - name: config
+              mountPath: /etc/telegraf
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - name: sys
+          hostPath:
+            path: /sys
+        - name: docker-socket
+          hostPath:
+            path: /var/run/docker.sock
+        - name: proc
+          hostPath:
+            path: /proc
+        # - name: utmp
+        #   hostPath:
+        #     path: /var/run/utmp
+        - name: config
+          configMap:
+            name: telegraf
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: telegraf
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: metrics-reader
+rules:
+- apiGroups: [""]
+  resources: ["nodes/stats"]
+  verbs: ["get"]
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: telegraf-metrics-reader
+subjects:
+- kind: ServiceAccount
+  name: telegraf
+  namespace: default
+roleRef:
+  kind: ClusterRole
+  name: metrics-reader
+  apiGroup: rbac.authorization.k8s.io

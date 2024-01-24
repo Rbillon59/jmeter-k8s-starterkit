@@ -1,0 +1,29 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Parameters:
+
+  StackName:
+    Type: String
+
+Resources:
+
+  K8sS3Stack:
+    Type: AWS::CloudFormation::Stack
+    Properties: 
+      TemplateURL: !Sub "https://${AWS::AccountId}-${StackName}-cloudform.s3-${AWS::Region}.amazonaws.com/k8s/s3.yml"
+      Parameters:
+        StackName: !Sub ${StackName}
+
+  K8sEcrStack: 
+    Type: AWS::CloudFormation::Stack
+    Properties: 
+      TemplateURL: !Sub "https://${AWS::AccountId}-${StackName}-cloudform.s3-${AWS::Region}.amazonaws.com/k8s/ecr.yml"
+      Parameters:
+        StackName: !Sub ${StackName}
+
+  K8sEksStack:
+    Type: AWS::CloudFormation::Stack
+    Properties: 
+      TemplateURL: !Sub "https://${AWS::AccountId}-${StackName}-cloudform.s3-${AWS::Region}.amazonaws.com/k8s/eks.yml"
+      Parameters:
+        StackName: !Sub ${StackName}

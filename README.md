@@ -67,6 +67,7 @@ Put your JMeter modules (include controlers) inside the `module` folder, child o
 
 ### 2. Deploying the Stack
 
+If you want to deploy in AWS, please refer to [aws folder](https://github.com/Rbillon59/jmeter-k8s-starterkit/tree/master/aws)
 #### From this repository
 
 `kubectl create -R -f k8s/`

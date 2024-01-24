@@ -1,0 +1,15 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Parameters:
+
+  StackName:
+    Type: String 
+
+Resources:
+
+  NodesManagerBucket:
+    Type: AWS::S3::Bucket
+    Description: Bucket to store Nodes-Manager template
+    DeletionPolicy: Retain
+    Properties:
+      BucketName: !Sub "${AWS::AccountId}-${StackName}-nodes-manager"

@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: telegraf
+
+  labels:
+    k8s-app: telegraf
+data:
+  telegraf.conf: |+
+    [global_tags]
+      env = "Kubernetes"
+    [agent]
+      hostname = "$HOSTNAME"
+    [[outputs.influxdb]]
+      urls = ["http://$INFLUXDB_HOST:8086/"] # required
+      database = "$INFLUXDB_DB" # required
+      timeout = "5s"
+      username = "$INFLUXDB_USER"
+      password = "$INFLUXDB_USER_PASSWORD"
+    [[inputs.cpu]]
+      percpu = true
+      totalcpu = true
+      collect_cpu_time = false
+      report_active = false
+    [[inputs.disk]]
+      ignore_fs = ["tmpfs", "devtmpfs", "devfs"]
+    [[inputs.diskio]]
+    [[inputs.kernel]]
+    [[inputs.mem]]
+    [[inputs.processes]]
+    [[inputs.swap]]
+    [[inputs.system]]
+    [[inputs.docker]]
+      endpoint = "unix:///var/run/docker.sock"
+    [[inputs.kubernetes]]
+      ## URL for the kubelet
+      url = "https://$NODEIP:10250"
+      bearer_token = "/run/secrets/kubernetes.io/serviceaccount/token"
+      insecure_skip_verify = true  
