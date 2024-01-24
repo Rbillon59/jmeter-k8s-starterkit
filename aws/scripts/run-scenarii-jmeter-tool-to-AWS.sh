@@ -3,11 +3,13 @@
 helpFunction()
 {
    echo ""
-   echo "Usage: $0 -s stack -r region -p profile -n nodes"
+   echo "Usage: $0 -s stack -r region -p profile -i injectors -j scenario"
    echo -e "\t-s stack"
    echo -e "\t-r region"
    echo -e "\t-p profile"
-   echo -e "\t-n number of nodes"
+   echo -e "\t-i number of injectors"
+   echo -e "\t-n namespace"
+   echo -e "\t-j scenario name (.jmx)"
    exit 1 # Exit script after printing help
 }
 
@@ -17,7 +19,9 @@ do
       s ) stack="$OPTARG" ;;
       r ) region="$OPTARG" ;;
       p ) profile="$OPTARG" ;;
-	  n ) nodes="$OPTARG" ;;
+	   i ) injectors="$OPTARG" ;;
+      n ) namespace="$OPTARG" ;;
+      j ) scenario="$OPTARG" ;; 
       ? ) helpFunction ;;
    esac
 done
@@ -25,17 +29,16 @@ done
 if [[ $1 == "?" ]]
 then
    helpFunction
-elif [ -z "$stack" ] || [ -z "$region" ] || [ -z "$profile" ] || [ -z "$nodes" ]
+elif [ -z "$stack" ] || [ -z "$region" ] || [ -z "$profile" ] || [ -z "$injectors" ] || [ -z "$namespace" ] || [ -z "$scenario" ]
 then
    echo "Some or all of the parameters are empty";
    helpFunction
 fi
 ./connectToEKS.sh -s $stack -r $region -p $profile
-cd ../jmeter-k8s-starterkit
-rm k8s/jmeter/jmeter-pv.yaml
+cp ../aws-files/grafana/* ../../k8s/tool/grafana
+cp ../aws-files/jmeter/* ../../k8s/jmeter
 volumes=(`aws ec2 describe-volumes --query 'Volumes[?Tags && Size >= \`5\`].VolumeId' --output text`)
-cp jmeter-pv.yaml k8s/jmeter/jmeter-pv.yaml
-sed -i "s/##VolumeId##/${volumes[0]}/g" k8s/jmeter/jmeter-pv.yaml
+sed -i "s/##VolumeId##/${volumes[0]}/g" ../../k8s/jmeter/jmeter-pv.yaml
 kubectl apply -R -f k8s/
-./start_test.sh -j my-scenario.jmx -n default -c -m -i $nodes -r
+./start_test.sh -j $scenario -n $namespace -c -m -i $injectors -r
 cd ../scripts

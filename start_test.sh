@@ -108,7 +108,7 @@ logit "INFO" "Waiting for master pod to be available"
 while [[ $(kubectl -n ${namespace} get pods -l jmeter_mode=master -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; do echo "$(kubectl -n ${namespace} get pods -l jmeter_mode=master )" && sleep 1; done
 
 master_pod=$(kubectl get pod -n "${namespace}" | grep jmeter-master | awk '{print $1}')
-
+logit "INFO" "master_pod is ${master_pod}"
 
 #Get Slave pod details
 slave_pods=($(kubectl get pods -n "${namespace}" | grep jmeter-slave | grep Running | awk '{print $1}'))
@@ -116,7 +116,7 @@ slave_num=${#slave_pods[@]}
 slave_digit="${#slave_num}"
 
 # jmeter directory in pods
-jmeter_directory="/opt/jmeter/apache-jmeter/bin"
+jmeter_directory="//opt/jmeter/apache-jmeter/bin"
 
 # Copying module and config to pods
 if [ -n "${module}" ]; then
@@ -147,12 +147,12 @@ logit "INFO" "Number of slaves is ${slave_num}"
 for ((i=0; i<end; i++))
 do
     logit "INFO" "Copying scenario/${jmx_dir}/${jmx} to ${slave_pods[$i]}"
-    kubectl cp -c jmslave "scenario/${jmx_dir}/${jmx}" -n "${namespace}" "${slave_pods[$i]}:/opt/jmeter/apache-jmeter/bin/" &
+    kubectl cp -c jmslave "scenario/${jmx_dir}/${jmx}" -n "${namespace}" "${slave_pods[$i]}://opt/jmeter/apache-jmeter/bin/" &
 done # for i in "${slave_pods[@]}"
 logit "INFO" "Finish copying scenario in slaves pod"
 
 logit "INFO" "Copying scenario/${jmx_dir}/${jmx} into ${master_pod}"
-kubectl cp -c jmmaster "scenario/${jmx_dir}/${jmx}" -n "${namespace}" "${master_pod}:/opt/jmeter/apache-jmeter/bin/" &
+kubectl cp -c jmmaster "scenario/${jmx_dir}/${jmx}" -n "${namespace}" "${master_pod}://opt/jmeter/apache-jmeter/bin/" &
 
 
 logit "INFO" "Installing needed plugins on slave pods"
@@ -208,8 +208,8 @@ wait
 for ((i=0; i<end; i++))
 do
         logit "INFO" "Starting jmeter server on ${slave_pods[$i]} in parallel"
-        kubectl cp -c jmslave "scenario/${jmx_dir}/jmeter_injector_start.sh" -n "${namespace}" "${slave_pods[$i]}:/opt/jmeter/jmeter_injector_start"
-        kubectl exec -c jmslave -i -n "${namespace}" "${slave_pods[$i]}" -- /bin/bash "/opt/jmeter/jmeter_injector_start" &  
+        kubectl cp -c jmslave "scenario/${jmx_dir}/jmeter_injector_start.sh" -n "${namespace}" "${slave_pods[$i]}://opt/jmeter/jmeter_injector_start"
+        kubectl exec -c jmslave -i -n "${namespace}" "${slave_pods[$i]}" -- //bin/bash "//opt/jmeter/jmeter_injector_start" &  
 done
 
 
@@ -236,25 +236,20 @@ echo "slave_array=(${slave_array[@]}); index=${slave_num} && while [ \${index} -
     echo "echo \"Installing needed plugins for master\""
     echo "cd /opt/jmeter/apache-jmeter/bin" 
     echo "sh PluginsManagerCMD.sh install-for-jmx ${jmx}" 
-    echo "echo \"Done installing plugins, launching test\""
     echo "jmeter ${param_host} ${param_user} ${report_command_line} --logfile /report/${jmx}_$(date +"%F_%H%M%S").jtl --nongui --testfile ${jmx} -Dserver.rmi.ssl.disable=true --remoteexit --remotestart ${slave_list} >> jmeter-master.out 2>> jmeter-master.err &"
     echo "trap 'kill -10 1' EXIT INT TERM"
     echo "java -jar /opt/jmeter/apache-jmeter/lib/jolokia-java-agent.jar start JMeter >> jmeter-master.out 2>> jmeter-master.err"
-    echo "echo \"Starting load test at : $(date)\" && wait"
+    echo "wait"
 } >> "scenario/${jmx_dir}/load_test.sh"
 
-logit "INFO" "Copying scenario/${jmx_dir}/load_test.sh into  ${master_pod}:/opt/jmeter/load_test"
-kubectl cp -c jmmaster "scenario/${jmx_dir}/load_test.sh" -n "${namespace}" "${master_pod}:/opt/jmeter/load_test"
+logit "INFO" "Copying scenario/${jmx_dir}/load_test.sh into  ${master_pod}://opt/jmeter/load_test"
+kubectl cp -c jmmaster "scenario/${jmx_dir}/load_test.sh" -n "${namespace}" "${master_pod}://opt/jmeter/load_test"
 
 logit "INFO" "Starting the performance test"
-logit "INFO" "##################################################"
-logit "INFO" "You can follow test execution summary on the master pod by running :"
-logit "INFO" "         kubectl logs -f -c jmmaster -n ${namespace} ${master_pod}"
-logit "INFO" "##################################################"
-logit "INFO" "Also using Grafana : kubectl ${namespace} port-forward svc/grafana 8443:443"
-GRAFANA_LOGIN=$(kubectl -n "${namespace}" get secret grafana-creds -o yaml | grep GF_SECURITY_ADMIN_USER: | awk -F" " '{print $2}' | base64 --decode)
-GRAFANA_PASSWORD=$(kubectl -n "${namespace}" get secret grafana-creds -o yaml | grep GF_SECURITY_ADMIN_PASSWORD: | awk -F" " '{print $2}' | base64 --decode)
-logit "INFO" " LOGIN : ${GRAFANA_LOGIN}"
-logit "INFO" " PASSWORD : ${GRAFANA_PASSWORD}"
-logit "INFO" "################################################"
-
+logit "INFO" "${namespace} ${master_pod}"
+kubectl port-forward $(kubectl get pod | grep grafana |awk '{print $1}') 3000 &
+logit "INFO" "Connect on localhost:3000"
+logit "WARNING" "DO NOT SHARE THESES CREDENTIALS"
+logit "WARNING" "username: admin"
+logit "WARNING" "password: XhXUdmQ576H6e7"
+kubectl exec -c jmmaster -i -n "${namespace}" "${master_pod}" -- //bin/bash "//opt/jmeter/load_test"

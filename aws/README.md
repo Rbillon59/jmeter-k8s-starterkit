@@ -82,10 +82,16 @@ Now wait for your stack to be successfully deployed.
 
 When the stack is fully deployed and ready to use, you can execute the script `./run-scenarii-jmeter-tool-to-AWS.sh`
 Provide the following parameters:
-- `-s`: The name of stack that will be deployed, for example `jmeter-k8s-stack`
-- `-r`: Region to deploy. If not done then set to `eu-west-1`
-- `-p`: Profile to use for commands that will be sent by aws cli
-- `-n`: Numbre that will be used (`-i` flag of [start test script](https://github.com/Rbillon59/jmeter-k8s-starterkit?tab=readme-ov-file#3-starting-the-test))
+
+| Argument | Description | Example |
+|----------|-------------|---------|
+| `-s` | The name of stack that will be deployed | `jmeter-k8s-stack` |
+| `-r` | Region to deploy. You can use for example | `eu-west-1` |
+| `-p` | Profile to use for commands that will be sent by aws cli | `default` |
+| `-i` | Number of injectors that will be used (`-i` flag of [start test script](https://github.com/Rbillon59/jmeter-k8s-starterkit?tab=readme-ov-file#3-starting-the-test)) | `2` |
+| `-n` | The Kubernetes namespace that will be used | `default` |
+| `-j` | The scenario file name, it has to end with `.jmx` | `my-scenario.jmx` |
+
 
 ### 3. Access the panel: 
 While the script is running you can access to the grafana dashboard.
@@ -128,12 +134,18 @@ You can do this for the generated report and the JTL for example.
 
 ## Demo script
 The script `install-rennes-from-scratch.sh` will install a stack with the following parameters:
-- `-s`: ***rennes***
-- `-r`: ***eu-west1***
-- `-p`: ***default***
-- `-n`: ***2***
+- `-s` : ***rennes***
+- `-r` : ***eu-west-1***
+- `-p` : ***default***
+- `-i` : ***2***
+- `-n` : **default**
+- `-j` : **my-scenario.jmx**
 
 The script `remove-rennes.sh` will delete the stack and release all the ressources. 
+It simply uses the script `deleteCloudForm.sh` with the following parameters:
+- `-s` : ***rennes***
+- `-r` : ***eu-west-1***
+- `-p` : ***default***
 
 So, if you want to test the deployment you can run 
 ```bash 
