@@ -100,7 +100,6 @@ Feel free to execute this command if didn't work. You can modify `3000` by the l
 
 
 
-### This will copy all the test results in a `report` folder.
 ### 4. Gethering results from the master pod
 
 After the test have been executed, the master pod job is in completed state and then, is deleted by the cleaner cronjob.
@@ -123,6 +122,8 @@ For example:
 ```bash
 kubectl cp $(kubectl get pod | grep master | awk '{print $1}'):/report ./report/
 ```
+This will copy all the test results in a `report` folder.
+
 You can do this for the generated report and the JTL for example.
 
 ## Demo script
