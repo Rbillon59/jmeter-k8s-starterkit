@@ -82,7 +82,7 @@ else
    fi
 
    logit "Getting security groups of $stack-vpc"
-   objects=(`aws ec2 describe-security-groups --filters "Name=tag-key,Values=kubernetes.io/cluster/rennes-eks" --query "SecurityGroups[].GroupId" --output text --profile $profile`)
+   objects=(`aws ec2 describe-security-groups --filters "Name=tag-key,Values=kubernetes.io/cluster/$stack-eks" --query "SecurityGroups[].GroupId" --output text --profile $profile`)
    objects+=(`aws ec2 describe-security-groups --filters Name=tag:Name,Values=$stack-* --query "SecurityGroups[].GroupId" --output text --profile $profile`)
    if [ ${#objects[@]} -eq 0 ]; then
       logit "No security groups found"
