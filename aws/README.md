@@ -85,9 +85,6 @@ Provide the following parameters:
 
 | Argument | Description | Example |
 |----------|-------------|---------|
-| `-s` | The name of stack that will be deployed | `jmeter-k8s-stack` |
-| `-r` | Region to deploy. You can use for example | `eu-west-1` |
-| `-p` | Profile to use for commands that will be sent by aws cli | `default` |
 | `-i` | Number of injectors that will be used (`-i` flag of [start test script](https://github.com/Rbillon59/jmeter-k8s-starterkit?tab=readme-ov-file#3-starting-the-test)) | `2` |
 | `-n` | The Kubernetes namespace that will be used | `default` |
 | `-j` | The scenario file name, it has to end with `.jmx` | `my-scenario.jmx` |
