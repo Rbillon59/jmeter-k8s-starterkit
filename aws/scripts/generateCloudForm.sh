@@ -45,7 +45,7 @@ aws cloudformation wait stack-create-complete --stack-name $stack --profile $pro
 ./connectToEKS.sh -s $stack -r $region -p $profile
 cp ../aws-files/grafana/* ../../k8s/tool/grafana
 cp ../aws-files/jmeter/* ../../k8s/jmeter
-volumes=(`aws ec2 describe-volumes --query 'Volumes[?Tags && Size >= \`5\`].VolumeId' --output text`)
+volumes=(`aws ec2 describe-volumes --query 'Volumes[?Tags && Size >= \`5\`].VolumeId' --output text --region $region --profile $profile`)
 sed -i "s/##VolumeId##/${volumes[0]}/g" ../../k8s/jmeter/jmeter-pv.yaml
 cd ../../
 kubectl create -R -f k8s/
