@@ -42,7 +42,7 @@ aws cloudformation create-stack \
 	--capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND \
 	--profile $profile
 aws cloudformation wait stack-create-complete --stack-name $stack --profile $profile
-./connectToEKs.sh -s $stack -r $region -p $profile
+./connectToEKS.sh -s $stack -r $region -p $profile
 cd ../../
 kubectl create -R -f k8s/
 helm repo add aws-ebs-csi-driver https://kubernetes-sigs.github.io/aws-ebs-csi-driver
