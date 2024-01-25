@@ -141,3 +141,8 @@ else
       logit "Stack $stack successfully deleted !"
    fi
 fi
+if [ $(aws ec2 delete-key-pair --key-name $stack-eks-keypair --query "Return" --region $region --profile $profile) ]; then
+   echo -e "\033[0;32mSuccessfully deleted keypairs !\033[0m"
+else
+   echo -e "\033[0;31mFailed to delete keypairs !\033[0m"
+fi

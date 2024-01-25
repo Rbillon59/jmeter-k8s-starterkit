@@ -31,6 +31,9 @@ fi
 
 stack_name=`aws sts get-caller-identity --query "Account" --output text --profile $profile`-$stack
 bucket_name=$stack_name-cloudform
+if [[ $(aws ec2 describe-key-pairs --query "KeyPairs[?starts_with(KeyName, '$stack_name')]") == "[]" ]]; then
+   aws ec2 create-key-pair --key-name $stack_name-eks-keypair --query "KeyMaterial" --output text --region $region --profile $profile> $stack_name-eks-keypair.pem
+fi
 aws s3 mb s3://$bucket_name && aws s3 sync ./templates s3://$bucket_name --exclude .git --profile $profile
 aws cloudformation create-stack \
 	--stack-name $stack \
