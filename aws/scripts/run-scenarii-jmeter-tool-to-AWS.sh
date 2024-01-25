@@ -3,7 +3,7 @@
 helpFunction()
 {
    echo ""
-   echo "Usage: $0 -s stack -r region -p profile -i injectors -j scenario"
+   echo "Usage: $0 -s stack -r region -p profile -i injectors -n namespace -j scenario"
    echo -e "\t-s stack"
    echo -e "\t-r region"
    echo -e "\t-p profile"
@@ -13,7 +13,7 @@ helpFunction()
    exit 1 # Exit script after printing help
 }
 
-while getopts "s:r:p:n:" opt
+while getopts "s:r:i:p:n:j:" opt
 do
    case "$opt" in
       s ) stack="$OPTARG" ;;
