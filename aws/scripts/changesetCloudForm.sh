@@ -20,26 +20,26 @@ do
    esac
 done
 
-if [ -z "$stack" ] || [ -z "$region" ] || [ -z "$profile" ]
+if [ -z "${stack}" ] || [ -z "${region}" ] || [ -z "${profile}" ]
 then
    echo "Some or all of the parameters are empty";
    helpFunction
 fi
 
-bucket_name=`aws sts get-caller-identity --query "Account" --output text`-$stack-cloudform
-changeset_name=$stack-changeset
+bucket_name=$(aws sts get-caller-identity --query "Account" --output text)-${stack}-cloudform
+changeset_name=${stack}-changeset
 aws cloudformation create-change-set \
-	--change-set-name $changeset_name \
-	--stack-name $stack \
-	--template-url https://$bucket_name.s3.$region.amazonaws.com/main.yml \
-	--parameters ParameterKey=StackName,ParameterValue=$stack \
+	--change-set-name ${changeset_name} \
+	--stack-name ${stack} \
+	--template-url https://${bucket_name}.s3.${region}.amazonaws.com/main.yml \
+	--parameters ParameterKey=StackName,ParameterValue=${stack} \
 	--capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND \
-	--profile $profile
+	--profile ${profile}
 aws cloudformation wait change-set-create-complete \
-	--change-set-name $changeset_name \
-	--stack-name $stack \
-	--profile $profile
+	--change-set-name ${changeset_name} \
+	--stack-name ${stack} \
+	--profile ${profile}
 aws cloudformation execute-change-set \
-	--change-set-name $changeset_name \
-	--stack-name $stack \
-	--profile $profile
+	--change-set-name ${changeset_name} \
+	--stack-name ${stack} \
+	--profile ${profile}

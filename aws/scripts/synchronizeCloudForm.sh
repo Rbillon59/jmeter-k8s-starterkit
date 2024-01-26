@@ -20,11 +20,12 @@ do
    esac
 done
 
-if [ -z "$stack" ] || [ -z "$region" ] || [ -z "$profile" ]
+if [ -z "${stack}" ] || [ -z "${region}" ] || [ -z "${profile}" ]
 then
    echo "Some or all of the parameters are empty";
    helpFunction
 fi
 
-bucket_name=`aws sts get-caller-identity --query "Account" --output text --region $region --profile $profile`-$stack-cloudform
-aws s3 sync ../templates s3://$bucket_name --exclude .git --region $region --profile $profile
+bucket_name=$(aws sts get-caller-identity --query "Account" --output text --region ${region} --profile ${profile})-${stack}-cloudform
+aws s3 sync ../templates s3://${bucket_name} --exclude .git --region ${region} --profile ${profile}
+aws eks update-kubeconfig --name ${stack}-eks --region ${region} --profile ${profile}

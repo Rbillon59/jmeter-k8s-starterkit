@@ -23,11 +23,11 @@ done
 if [[ $1 == "?" ]]
 then
    helpFunction
-elif [ -z "$injectors" ] || [ -z "$namespace" ] || [ -z "$scenario" ]
+elif [ -z "${injectors}" ] || [ -z "${namespace}" ] || [ -z "${scenario}" ]
 then
    echo "Some or all of the parameters are empty";
    helpFunction
 fi
 cd ../../
-./start_test.sh -j $scenario -n $namespace -c -m -i $injectors -r
+./start_test.sh -j ${scenario} -n ${namespace} -c -m -i ${injectors} -r
 cd aws/scripts

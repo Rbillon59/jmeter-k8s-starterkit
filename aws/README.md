@@ -14,9 +14,9 @@ You will find inside it the necessary to organize and run your performance scena
 Thanks to [Kubernauts](https://github.com/kubernauts/jmeter-kubernetes) for the inspiration !
 
 ## Getting started
-Prerequisities :
+Prerequisites :
 - An active AWS account
-- Functionnal cli requirement: 
+- Functional cli requirements: 
     <table>
     <tr>
     <th>CLI</th> <th>Test Command</th> <th>Description</th>
@@ -66,7 +66,7 @@ Prerequisities :
     <td>Helm is a package manager for Kubernetes applications. It simplifies the process of defining, installing, and managing Kubernetes applications and their dependencies. Helm enables you to package Kubernetes resources, such as deployments, services, and ConfigMaps, into a single deployable unit called a "chart.", used to deploy the tools for tests</td>
     </tr>
     </table>
-- Functional and valid scenario (see [scenario explanation](https://github.com/Rbillon59/jmeter-k8s-starterkit?tab=readme-ov-file#1-preparing-the-repository))
+- Functional and valid scenario (see [scenario explanation](../README.md#1-preparing-the-repository))
 
 ### 1. Deploy the aws stack
 
@@ -85,17 +85,17 @@ Provide the following parameters:
 
 | Argument | Description | Example |
 |----------|-------------|---------|
-| `-i` | Number of injectors that will be used (`-i` flag of [start test script](https://github.com/Rbillon59/jmeter-k8s-starterkit?tab=readme-ov-file#3-starting-the-test)) | `2` |
+| `-i` | Number of injectors that will be used (`-i` flag of [start test script](../README.md#3-starting-the-test)) | `2` |
 | `-n` | The Kubernetes namespace that will be used | `default` |
 | `-j` | The scenario file name, it has to end with `.jmx` | `my-scenario.jmx` |
 
 
 ### 3. Access the panel: 
 While the script is running you can access to the grafana dashboard.
-Feel free to execute this command if didn't work. You can modify `3000` by the local port you want
+Feel free to execute this command if it didn't work, you can modify `3000` by the local port you want
 `kubectl port-forward $(kubectl get pod | grep grafana |awk '{print $1}') 3000`
-> Warning, this command is aleready executed in the script `start_test.sh`
-#### And then access to the adress [localhost:3000](http://localhost:3000) with the following credentials:
+> Warning, this command is already executed in the script `start_test.sh`  
+#### And then access to the address [localhost:3000](http://localhost:3000) with the following credentials:  
 
 | username | password |     
 | :-------------: | :-------------: |
@@ -129,25 +129,15 @@ This will copy all the test results in a `report` folder.
 
 You can do this for the generated report and the JTL for example.
 
-## Demo script
-The script `install-rennes-from-scratch.sh` will install a stack with the following parameters:
-- `-s` : ***rennes***
-- `-r` : ***eu-west-1***
-- `-p` : ***default***
-- `-i` : ***2***
-- `-n` : **default**
-- `-j` : **my-scenario.jmx**
+So, if you want to test the deployment you can run in the `scripts` folder:
 
-The script `remove-rennes.sh` will delete the stack and release all the ressources. 
-It simply uses the script `deleteCloudForm.sh` with the following parameters:
-- `-s` : ***rennes***
-- `-r` : ***eu-west-1***
-- `-p` : ***default***
-
-So, if you want to test the deployment you can run 
 ```bash 
-# Install the stack rennes with 2 nodes
-./install-rennes-from-scratch.sh
-# Delete the stack rennes
-./remove-rennes.sh
+# Provision the stack  
+./generateCloudForm.sh -s example-stack -r eu-west-1 -p default  
+
+# Start the JMeter scenario  
+./run-scenarii-jmeter-tool-to-AWS.sh -s example-stack -r eu-west-1 -p default -i 2 -n default -j my-scenario.jmx  
+
+# Free resources  
+./deleteCloudForm.sh -s example-stack -r eu-west-1 -p default  
 ```
