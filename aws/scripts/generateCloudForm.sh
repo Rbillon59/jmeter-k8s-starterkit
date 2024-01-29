@@ -49,8 +49,8 @@ aws cloudformation wait stack-create-complete --stack-name ${stack} --profile ${
 
 # Configure the templates 
 aws eks update-kubeconfig --name ${stack}-eks --region ${region} --profile ${profile}
-cp ../aws-files/grafana/* ../../k8s/tool/grafana
-cp ../aws-files/jmeter/* ../../k8s/jmeter
+cp -r ../aws-files/grafana/* ../../k8s/tool/grafana
+cp -r ../aws-files/jmeter/* ../../k8s/jmeter
 volumes=($(aws ec2 describe-volumes --query "Volumes[?Tags && Size >= '5'].VolumeId" --output text --region ${region} --profile ${profile}))
 sed -i "s/##VolumeId##/${volumes[0]}/g" ../../k8s/jmeter/jmeter-pv.yaml
 cd ../../
