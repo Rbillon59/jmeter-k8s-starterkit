@@ -80,15 +80,17 @@ Now wait for your stack to be successfully deployed.
 
 ### 2. Start the scenarii
 
-When the stack is fully deployed and ready to use, you can execute the script `./run-scenarii-jmeter-tool-to-AWS.sh`
+When the stack is fully deployed and ready to use, you can execute the script `./start_test.sh`
 Provide the following parameters:
 
 | Argument | Description | Example |
 |----------|-------------|---------|
-| `-i` | Number of injectors that will be used (`-i` flag of [start test script](../README.md#3-starting-the-test)) | `2` |
-| `-n` | The Kubernetes namespace that will be used | `default` |
+| `-c` | Flag to split and copy csv if you use csv in your test | `-c` |
+| `-i` | Number of injectors to scale slaves pods to the desired number of JMeter injectors | `2` |
 | `-j` | The scenario file name, it has to end with `.jmx` | `my-scenario.jmx` |
-
+| `-m` | Flag to copy fragmented jmx present in scenario/project/module if you use include controller and external test fragment | `-m` |
+| `-n` | The Kubernetes namespace that will be used | `default` |
+| `-r` | Flag to enable report generation at the end of the test | `-r` |
 
 ### 3. Access the panel: 
 While the script is running you can access to the grafana dashboard.
@@ -133,10 +135,10 @@ So, if you want to test the deployment you can run in the `scripts` folder:
 
 ```bash 
 # Provision the stack  
-./generateCloudForm.sh -s example-stack -r eu-west-1 -p default  
+./generateCloudForm.sh -s example-stack -r eu-west-1 -p default
 
 # Start the JMeter scenario  
-./run-scenarii-jmeter-tool-to-AWS.sh -s example-stack -r eu-west-1 -p default -i 2 -n default -j my-scenario.jmx  
+./start_test.sh  -cmri 2 -n default -j my-scenario.jmx
 
 # Free resources  
 ./deleteCloudForm.sh -s example-stack -r eu-west-1 -p default  
