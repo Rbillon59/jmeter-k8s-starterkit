@@ -1,0 +1,38 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Parameters:
+
+  StackName:
+    Type: String
+
+Resources:
+
+  ECR: 
+    Type: AWS::ECR::Repository
+    Properties: 
+      RepositoryName: !Sub "${StackName}-ecr-repository"
+      RepositoryPolicyText: 
+        Version: "2012-10-17"
+        Statement: 
+          -
+            Sid: AllowCodeBuild
+            Effect: Allow
+            Principal: 
+              AWS: 
+                - !Sub "arn:aws:iam::${AWS::AccountId}:root"
+            Action: 
+              - "ecr:GetDownloadUrlForLayer"
+              - "ecr:BatchGetImage"
+              - "ecr:BatchCheckLayerAvailability"
+              - "ecr:PutImage"
+              - "ecr:InitiateLayerUpload"
+              - "ecr:UploadLayerPart"
+              - "ecr:CompleteLayerUpload"
+
+Outputs:
+
+  RepositoryURI:
+    Description: URI of ECR repo
+    Value: !GetAtt ECR.RepositoryUri
+    Export:
+      Name: !Sub "${StackName}-RepositoryURI"

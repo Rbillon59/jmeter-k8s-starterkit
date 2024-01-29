@@ -1,0 +1,16 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Parameters:
+
+  StackName:
+    Type: String 
+    Description: Name of the stack
+
+Resources:
+
+  K8sStack:
+    Type: AWS::CloudFormation::Stack
+    Properties: 
+      TemplateURL: !Sub "https://${AWS::AccountId}-${StackName}-cloudform.s3-${AWS::Region}.amazonaws.com/k8s/main.yml"
+      Parameters:
+        StackName: !Sub ${StackName}
