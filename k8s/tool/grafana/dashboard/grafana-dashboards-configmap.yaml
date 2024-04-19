@@ -26,7 +26,7 @@ data:
       "editable": true,
       "gnetId": 5496,
       "graphTooltip": 0,
-      "iteration": 1611224434496,
+      "iteration": 1713542486754,
       "links": [],
       "panels": [
         {
@@ -727,7 +727,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "7.3.7",
+          "pluginVersion": "7.3.3",
           "pointradius": 1,
           "points": false,
           "renderer": "flot",
@@ -762,7 +762,7 @@ data:
               "hide": false,
               "orderByTime": "ASC",
               "policy": "default",
-              "query": "SELECT sum(\"mean\") FROM ( \nSELECT mean(\"count\") / $send_interval FROM \"$measurement_name\" \nWHERE  $timeFilter GROUP BY \"transaction\", time($__interval)\n) GROUP BY time($__interval)",
+              "query": "SELECT sum(\"mean\") FROM ( \nSELECT mean(\"count\") / $send_interval FROM \"$measurement_name\" \nWHERE  $timeFilter AND transaction != 'all' GROUP BY \"transaction\", time($__interval)\n) GROUP BY time($__interval)",
               "rawQuery": true,
               "refId": "B",
               "resultFormat": "time_series",
@@ -871,7 +871,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "7.3.7",
+          "pluginVersion": "7.3.3",
           "pointradius": 5,
           "points": false,
           "renderer": "flot",
@@ -1107,7 +1107,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "7.3.7",
+          "pluginVersion": "7.3.3",
           "pointradius": 1,
           "points": true,
           "renderer": "flot",
@@ -1139,7 +1139,7 @@ data:
               ],
               "orderByTime": "ASC",
               "policy": "default",
-              "query": "SELECT mean(\"count\") / $send_interval FROM \"$measurement_name\" WHERE  $timeFilter GROUP BY \"transaction\", time($__interval)",
+              "query": "SELECT mean(\"count\") / $send_interval FROM \"$measurement_name\" WHERE  $timeFilter AND transaction != 'all' GROUP BY \"transaction\", time($__interval)",
               "rawQuery": true,
               "refId": "A",
               "resultFormat": "time_series",
@@ -1251,7 +1251,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "7.3.7",
+          "pluginVersion": "7.3.3",
           "pointradius": 1,
           "points": false,
           "renderer": "flot",
@@ -1409,7 +1409,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "7.3.7",
+          "pluginVersion": "7.3.3",
           "pointradius": 1,
           "points": false,
           "renderer": "flot",
@@ -1558,7 +1558,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "7.3.7",
+          "pluginVersion": "7.3.3",
           "pointradius": 1,
           "points": false,
           "renderer": "flot",
@@ -1582,7 +1582,7 @@ data:
               "measurement": "jmeter",
               "orderByTime": "ASC",
               "policy": "default",
-              "query": "SELECT mean(\"avg\") FROM \"$measurement_name\" WHERE (\"application\" =~ /^$application$/) AND $timeFilter GROUP BY \"transaction\", time($__interval) fill(null)",
+              "query": "SELECT mean(\"avg\") FROM \"$measurement_name\" WHERE (\"application\" =~ /^$application$/) AND $timeFilter AND transaction != 'all' GROUP BY \"transaction\", time($__interval) fill(null)",
               "rawQuery": true,
               "refId": "B",
               "resultFormat": "time_series",
@@ -1705,7 +1705,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "7.3.7",
+          "pluginVersion": "7.3.3",
           "pointradius": 1,
           "points": false,
           "renderer": "flot",
@@ -1730,7 +1730,7 @@ data:
               "measurement": "jmeter",
               "orderByTime": "ASC",
               "policy": "default",
-              "query": "SELECT mean(\"pct90.0\") FROM \"$measurement_name\" WHERE (\"application\" =~ /^$application$/) AND $timeFilter GROUP BY \"transaction\", time($__interval) fill(null)",
+              "query": "SELECT mean(\"pct90.0\") FROM \"$measurement_name\" WHERE (\"application\" =~ /^$application$/) AND  $timeFilter AND transaction != 'all' GROUP BY \"transaction\", time($__interval) fill(null)",
               "rawQuery": true,
               "refId": "B",
               "resultFormat": "time_series",
@@ -1961,47 +1961,9 @@ data:
               ],
               "orderByTime": "ASC",
               "policy": "default",
-              "query": "SELECT sum(\"count\") as Count, mean(\"count\") / $send_interval as Throughput, mean(\"avg\") as Avg, mean(\"min\") as Min, mean(\"max\") as Max, mean(\"pct90.0\") as \"90%\", mean(\"pct95.0\") as \"95%\", mean(\"pct99.0\") as \"99%\", mean(\"sb\") / $send_interval as SendBytes, mean(\"rb\") / $send_interval as ReceivedBytes FROM \"$measurement_name\" WHERE (\"application\" =~ /^$application$/) AND $timeFilter GROUP BY \"transaction\"",
+              "query": "SELECT sum(\"count\") as Count, mean(\"count\") / $send_interval as Throughput, mean(\"avg\") as Avg, mean(\"min\") as Min, mean(\"max\") as Max, mean(\"pct90.0\") as \"90%\", mean(\"pct95.0\") as \"95%\", mean(\"pct99.0\") as \"99%\", mean(\"sb\") / $send_interval as SendBytes, mean(\"rb\") / $send_interval as ReceivedBytes FROM \"$measurement_name\" WHERE (\"application\" =~ /^$application$/) AND $timeFilter AND transaction != 'all'  GROUP BY \"transaction\"",
               "rawQuery": true,
               "refId": "B",
-              "resultFormat": "table",
-              "select": [
-                [
-                  {
-                    "params": [
-                      "value"
-                    ],
-                    "type": "field"
-                  },
-                  {
-                    "params": [],
-                    "type": "mean"
-                  }
-                ]
-              ],
-              "tags": []
-            },
-            {
-              "groupBy": [
-                {
-                  "params": [
-                    "$__interval"
-                  ],
-                  "type": "time"
-                },
-                {
-                  "params": [
-                    "null"
-                  ],
-                  "type": "fill"
-                }
-              ],
-              "hide": true,
-              "orderByTime": "ASC",
-              "policy": "default",
-              "query": "SELECT sum(\"count\") as KO FROM \"$measurement_name\" WHERE \"application\" =~ /^$application$/ AND \"statut\" = 'ko' AND \"transaction\" =~ /^R-HTTP/ AND $timeFilter GROUP BY \"transaction\"",
-              "rawQuery": true,
-              "refId": "A",
               "resultFormat": "table",
               "select": [
                 [
@@ -2076,7 +2038,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "7.3.7",
+          "pluginVersion": "7.3.3",
           "pointradius": 1,
           "points": false,
           "renderer": "flot",
@@ -2086,7 +2048,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "alias": "$tag_transaction",
+              "alias": "$tag_transaction - sent",
               "groupBy": [
                 {
                   "params": [
@@ -2103,7 +2065,7 @@ data:
               ],
               "orderByTime": "ASC",
               "policy": "default",
-              "query": "SELECT mean(\"sb\") FROM \"$measurement_name\" WHERE (\"application\" =~ /^$application$/) AND $timeFilter GROUP BY \"transaction\", time($__interval) fill(null)",
+              "query": "SELECT mean(\"sb\") FROM \"$measurement_name\" WHERE (\"application\" =~ /^$application$/) AND $timeFilter AND transaction != 'all'  GROUP BY \"transaction\", time($__interval) fill(null)",
               "rawQuery": true,
               "refId": "A",
               "resultFormat": "time_series",
@@ -2124,7 +2086,7 @@ data:
               "tags": []
             },
             {
-              "alias": "$tag_transaction",
+              "alias": "$tag_transaction - received",
               "groupBy": [
                 {
                   "params": [
@@ -2141,7 +2103,7 @@ data:
               ],
               "orderByTime": "ASC",
               "policy": "default",
-              "query": "SELECT mean(\"rb\") FROM \"$measurement_name\" WHERE (\"application\" =~ /^$application$/) AND $timeFilter GROUP BY \"transaction\", time($__interval) fill(null)",
+              "query": "SELECT mean(\"rb\") FROM \"$measurement_name\" WHERE (\"application\" =~ /^$application$/) AND $timeFilter AND transaction != 'all'  GROUP BY \"transaction\", time($__interval) fill(null)",
               "rawQuery": true,
               "refId": "B",
               "resultFormat": "time_series",
@@ -2920,7 +2882,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "7.3.7",
+          "pluginVersion": "7.3.3",
           "pointradius": 1,
           "points": false,
           "renderer": "flot",
@@ -3121,7 +3083,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "7.3.7",
+          "pluginVersion": "7.3.3",
           "pointradius": 1,
           "points": true,
           "renderer": "flot",
@@ -3268,7 +3230,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "7.3.7",
+          "pluginVersion": "7.3.3",
           "pointradius": 1,
           "points": false,
           "renderer": "flot",
@@ -3791,8 +3753,7 @@ data:
               "text": "application name",
               "value": "application name"
             },
-            "datasource": "$data_source",
-            "definition": "",
+            "datasource": "Influx-Jmeter",
             "error": null,
             "hide": 0,
             "includeAll": false,
@@ -3814,13 +3775,11 @@ data:
           {
             "allValue": null,
             "current": {
-              "isNone": true,
-              "selected": true,
-              "text": "None",
-              "value": ""
+              "selected": false,
+              "text": "R-HTTP_SAMPLE_REQUEST",
+              "value": "R-HTTP_SAMPLE_REQUEST"
             },
-            "datasource": "$data_source",
-            "definition": "",
+            "datasource": "Influx-Jmeter",
             "error": null,
             "hide": 0,
             "includeAll": false,
@@ -3830,7 +3789,7 @@ data:
             "options": [],
             "query": "SHOW TAG VALUES FROM \"jmeter\" WITH KEY = \"transaction\" WHERE \"application\" =~ /^$application$/ AND \"transaction\" != 'internal' AND \"transaction\" != 'all'",
             "refresh": 1,
-            "regex": "TC.*",
+            "regex": "",
             "skipUrlSync": false,
             "sort": 0,
             "tagValuesQuery": null,
@@ -3882,7 +3841,7 @@ data:
         ]
       },
       "time": {
-        "from": "now-3h",
+        "from": "now-5m",
         "to": "now"
       },
       "timepicker": {
