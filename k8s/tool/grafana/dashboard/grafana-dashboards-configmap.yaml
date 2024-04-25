@@ -26,7 +26,7 @@ data:
       "editable": true,
       "gnetId": 5496,
       "graphTooltip": 0,
-      "iteration": 1713542486754,
+      "iteration": 1714043360433,
       "links": [],
       "panels": [
         {
@@ -1812,7 +1812,7 @@ data:
             },
             "overrides": []
           },
-          "fontSize": "80%",
+          "fontSize": "90%",
           "gridPos": {
             "h": 8,
             "w": 24,
@@ -1959,11 +1959,50 @@ data:
                   "type": "fill"
                 }
               ],
+              "hide": false,
               "orderByTime": "ASC",
               "policy": "default",
-              "query": "SELECT sum(\"count\") as Count, mean(\"count\") / $send_interval as Throughput, mean(\"avg\") as Avg, mean(\"min\") as Min, mean(\"max\") as Max, mean(\"pct90.0\") as \"90%\", mean(\"pct95.0\") as \"95%\", mean(\"pct99.0\") as \"99%\", mean(\"sb\") / $send_interval as SendBytes, mean(\"rb\") / $send_interval as ReceivedBytes FROM \"$measurement_name\" WHERE (\"application\" =~ /^$application$/) AND $timeFilter AND transaction != 'all'  GROUP BY \"transaction\"",
+              "query": "SELECT sum(\"count\") as Count,\nmean(\"count\") / $send_interval as Throughput,\nmean(\"avg\") as Avg,\nmin(\"min\") as Min,\nmax(\"max\") as Max,\npercentile(\"pct90.0\", 90) as \"90%\",\npercentile(\"pct95.0\", 95) as \"95%\",\npercentile(\"pct99.0\", 99) as \"99%\", \nmean(\"sb\") / $send_interval as SendBytes,\nmean(\"rb\") / $send_interval as ReceivedBytes\n\nFROM \"$measurement_name\" WHERE (\"application\" =~ /^$application$/) \nAND $timeFilter \nAND transaction != 'all'  \nAND statut = 'all'\nGROUP BY \"transaction\"",
               "rawQuery": true,
               "refId": "B",
+              "resultFormat": "table",
+              "select": [
+                [
+                  {
+                    "params": [
+                      "value"
+                    ],
+                    "type": "field"
+                  },
+                  {
+                    "params": [],
+                    "type": "mean"
+                  }
+                ]
+              ],
+              "tags": []
+            },
+            {
+              "groupBy": [
+                {
+                  "params": [
+                    "$__interval"
+                  ],
+                  "type": "time"
+                },
+                {
+                  "params": [
+                    "null"
+                  ],
+                  "type": "fill"
+                }
+              ],
+              "hide": true,
+              "orderByTime": "ASC",
+              "policy": "default",
+              "query": "SELECT count, transaction\n\nFROM \"$measurement_name\"",
+              "rawQuery": true,
+              "refId": "A",
               "resultFormat": "table",
               "select": [
                 [
@@ -3719,7 +3758,7 @@ data:
           "type": "table-old"
         }
       ],
-      "refresh": "1m",
+      "refresh": false,
       "schemaVersion": 26,
       "style": "dark",
       "tags": [
@@ -3754,6 +3793,7 @@ data:
               "value": "application name"
             },
             "datasource": "Influx-Jmeter",
+            "definition": "",
             "error": null,
             "hide": 0,
             "includeAll": false,
@@ -3780,6 +3820,7 @@ data:
               "value": "R-HTTP_SAMPLE_REQUEST"
             },
             "datasource": "Influx-Jmeter",
+            "definition": "",
             "error": null,
             "hide": 0,
             "includeAll": false,
